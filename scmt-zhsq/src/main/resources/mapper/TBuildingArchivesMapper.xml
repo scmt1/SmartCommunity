@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TBuildingArchivesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TBuildingArchives">
+        <id column="id" property="id" />
+        <result column="building_type" property="buildingType" />
+        <result column="building_name" property="buildingName" />
+        <result column="building_address" property="buildingAddress" />
+        <result column="community" property="community" />
+        <result column="community_id" property="communityId" />
+        <result column="grid" property="grid" />
+        <result column="location" property="location" />
+        <result column="housing_estate" property="housingEstate" />
+        <result column="street" property="street" />
+        <result column="street_id" property="streetId" />
+        <result column="street_number" property="streetNumber" />
+        <result column="position" property="position" />
+        <result column="is_delete" property="isDelete" />
+        <result column="bak2" property="bak2" />
+        <result column="bak3" property="bak3" />
+        <result column="bak4" property="bak4" />
+        <result column="bak5" property="bak5" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="delete_id" property="deleteId" />
+        <result column="housing_estate_Name" property="housingEstateName" />
+
+<!--        <result column="unit" property="unit" />-->
+<!--        <result column="floor" property="floor" />-->
+<!--        <result column="door_number" property="doorNumber" />-->
+        <result column="manager_name" property="managerName" />
+        <result column="manager_phone" property="managerPhone" />
+        <result column="img_path" property="imgPath" />
+        <result column="park_place_number" property="parkPlaceNumber" />
+        <result column="building_nature" property="buildingNature" />
+        <result column="building_year" property="buildingYear" />
+        <result column="area" property="area" />
+        <result column="building_structure" property="buildingStructure" />
+        <result column="elevator_number" property="elevatorNumber" />
+        <result column="profile" property="profile" />
+        <result column="grid_name" property="gridName" />
+        <result column="building_type_name" property="buildingTypeName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, building_type, building_name, building_address, community,community_id, grid, location, housing_estate, street,street_id,street_number, position ,is_delete, bak2, bak3, bak4, bak5, remark, create_time, create_id, update_time, update_id, delete_id,unit,floor,door_number,manager_name,manager_phone,img_path,park_place_number,building_nature,building_year,area,building_structure,elevator_number,profile
+    </sql>
+
+<!--    最大的层数和楼层中最大的房间数-->
+    <select id="getMaxOfFloorAndDoorAndUnit" resultType="map">
+        select unit as unitMax,floor as floorMax,door_number as doorMax from t_building_archives where id = #{id}
+    </select>
+
+    <select id="getOtherPolygonData" resultType="map">
+        select t_building_archives.location, CONCAT(basic_housing_estate.name,t_building_archives.building_name,'号楼')AS housingEstateName from t_building_archives
+        left outer join basic_housing_estate on basic_housing_estate.id = t_building_archives.housing_estate
+        where t_building_archives.location is not null and t_building_archives.location != ''
+        <if test="id != null and id != ''">
+            and t_building_archives.id != #{id}
+        </if>
+
+    </select>
+    <!--    通过wapper 联表查询-->
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.TBuildingArchives">
+      SELECT
+            t.id,
+            t.building_type,
+            t1.NAME as building_type_name,
+            t.building_name,
+            t.building_address,
+            t.community,
+            t.community_id,
+            t.grid,
+            t.location,
+            t.housing_estate,
+            t.street,
+            t.street_id,
+            t.street_number,
+            t.position,
+            t.is_delete,
+            t.bak2,
+            t.bak3,
+            t.bak4,
+            t.bak5,
+            t.remark,
+            t.create_time,
+            t.create_id,
+            t.update_time,
+            t.update_id,
+            t.delete_id,
+            t.unit,
+            t.floor,
+            t.door_number,
+            t.manager_name,
+            t.manager_phone,
+            t.img_path,
+            t.park_place_number,
+            t5.NAME as building_nature,
+            t.building_year,
+            t.area,
+            t2.NAME as building_structure,
+            t.elevator_number,
+            (select  name  from basic_housing_estate t3 where t3.id = t.housing_estate ) as housing_estate_Name,
+            (select  name  from basic_grids t4 where t4.id = t.grid ) as grid_name,
+           PROFILE
+        FROM
+            t_building_archives t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'BuildingType' AND t1.number = t.building_type
+            LEFT JOIN grid_dictionary t2 on t2.field_name ='buildingStructureData' and t2.number = t.building_structure
+            LEFT JOIN grid_dictionary t5 on t5.field_name ='buildingNatureData' and t5.number = t.building_nature
+
+             ${ew.customSqlSegment}
+    </select>
+    <!--    通过wapper 联表查询-->
+    <select id="selectByPageWrapper" resultType="me.zhengjie.entity.TBuildingArchives">
+        SELECT * from(
+            SELECT
+                t.id,
+                t.building_type,
+                t1.NAME as building_type_name,
+                t.building_name,
+                t.building_address,
+                t.community,
+                t.community_id,
+                t.grid,
+                t.location,
+                t.housing_estate,
+                t.street,
+                t.street_id,
+                t.street_number,
+                t.position,
+                t.is_delete,
+                t.bak2,
+                t.bak3,
+                t.bak4,
+                t.bak5,
+                t.remark,
+                t.create_time,
+                t.create_id,
+                t.update_time,
+                t.update_id,
+                t.delete_id,
+                t.unit,
+                t.floor,
+                t.door_number,
+                t.manager_name,
+                t.manager_phone,
+                t.img_path,
+                t.park_place_number,
+                t5.NAME as building_nature,
+                t.building_year,
+                t.area,
+                t2.NAME as building_structure,
+                t.elevator_number,
+                (select  name  from basic_housing_estate t3 where t3.id = t.housing_estate ) as housing_estate_Name,
+                (select  name  from basic_grids t4 where t4.id = t.grid ) as grid_name,
+               PROFILE
+            FROM
+                t_building_archives t
+                LEFT JOIN grid_dictionary t1 ON t1.field_name = 'BuildingType' AND t1.number = t.building_type
+                LEFT JOIN grid_dictionary t2 on t2.field_name ='buildingStructureData' and t2.number = t.building_structure
+                LEFT JOIN grid_dictionary t5 on t5.field_name ='buildingNatureData' and t5.number = t.building_nature
+            ) a
+            ${ew.customSqlSegment}
+    </select>
+
+</mapper>

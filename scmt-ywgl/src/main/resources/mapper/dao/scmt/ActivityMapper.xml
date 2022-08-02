@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.dao.mapper.ActivityMapper">
+
+
+<!--    根据数据字段新增流程表单数据-->
+    <insert id="AddActivity">
+        insert into
+        ${tableName}
+        (
+        <foreach collection="model" index="key" item="value"
+                 separator=",">
+            `${key}`
+        </foreach>
+        )
+        values
+        (
+        <foreach collection="model" index="key" item="value"
+                 separator=",">
+            #{value}
+        </foreach>
+        )
+
+    </insert>
+<!--    根据数据字段编辑流程表单数据-->
+    <update id="UpdateActivity">
+        update ${tableName}
+        <set>
+            <foreach collection="model" index="key" item="value"
+                     separator=",">
+                <if test="key != 'tableName' ">
+                    `${key}`= #{value}
+                </if>
+            </foreach>
+        </set>
+        where id = #{model.id}
+    </update>
+    <select id="getActivityById" resultType="java.util.Map" >
+        select
+        <foreach  index="key" item="item" collection="columns" separator=",">
+            <choose>
+                <when test="item.columnType != null and (item.columnType =='date' or item.columnType =='datetime' or item.columnType =='timestamp' or item.columnType =='time'   )">
+                    date_format(${item.columnName}, '%Y-%m-%d %H:%i:%s') as ${item.columnName}
+                </when>
+                <otherwise>
+                    ${item.columnName}
+                </otherwise>
+            </choose>
+        </foreach>
+       from  ${tableName}
+        where id= ${id}
+    </select>
+</mapper>

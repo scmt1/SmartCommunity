@@ -1,0 +1,225 @@
+package me.zhengjie.modules.system.rest;
+
+import cn.hutool.core.date.DateTime;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+
+import me.zhengjie.annotation.AnonymousAccess;
+import me.zhengjie.aop.log.Log;
+import me.zhengjie.common.utils.ResultUtil;
+import me.zhengjie.common.vo.Result;
+import me.zhengjie.common.vo.SearchVo;
+import me.zhengjie.config.DataScope;
+import me.zhengjie.exception.BadRequestException;
+import me.zhengjie.modules.system.rest.street.service.StreetService;
+import me.zhengjie.system.domain.Dept;
+import me.zhengjie.system.service.DeptService;
+import me.zhengjie.system.service.dto.DeptDto;
+import me.zhengjie.system.service.dto.DeptQueryCriteria;
+import me.zhengjie.system.service.dto.DictDetailDto;
+import me.zhengjie.utils.ThrowableUtil;
+
+import org.activiti.engine.task.IdentityLink;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import cn.hutool.core.collection.CollectionUtil;
+
+/**
+* @author Zheng Jie
+* @date 2019-03-25
+*/
+@RestController
+@Api(tags = "系统：部门管理")
+@RequestMapping("/api/dept")
+public class DeptController {
+
+    private final DeptService deptService;
+
+    private final DataScope dataScope;
+
+    @Autowired
+    private StreetService streetService;
+
+    private static final String ENTITY_NAME = "dept";
+
+    public DeptController(DeptService deptService, DataScope dataScope) {
+        this.deptService = deptService;
+        this.dataScope = dataScope;
+    }
+
+    @Log("导出部门数据")
+    @ApiOperation("导出部门数据")
+    @GetMapping(value = "/download")
+    @PreAuthorize("@el.check('dept:list')")
+    public void download(HttpServletResponse response, DeptQueryCriteria criteria) throws IOException {
+        deptService.download(deptService.queryAll(criteria), response);
+    }
+
+    @Log("查询部门")
+    @ApiOperation("查询部门")
+    @GetMapping
+//    @PreAuthorize("@el.check('user:list','dept:list')")
+    public ResponseEntity<Object> getDepts(DeptQueryCriteria criteria, SearchVo searchVo){
+        if(searchVo!=null && searchVo.getEndDate()!=null && searchVo.getStartDate()!=null){
+            List<Timestamp> createTime  =  new ArrayList<Timestamp>();
+
+            Timestamp t1 = Timestamp.valueOf(searchVo.getStartDate() +" 00:00:00");
+            Timestamp t2 = Timestamp.valueOf(searchVo.getEndDate()+" 00:00:00");
+            createTime.add(t1);
+            createTime.add(t2);
+            criteria.setCreateTime(createTime);
+        }
+        // 数据权限
+//        criteria.setIds(dataScope.getDeptIds());
+        List<DeptDto> deptDtos = deptService.queryAll(criteria);
+        return new ResponseEntity<>(deptService.buildTree(deptDtos),HttpStatus.OK);
+    }
+
+    @Log("查询部门")
+    @ApiOperation("根据父Id查询部门")
+    @GetMapping(value = "/getDeptsByPid")
+    public ResponseEntity<Object> getDeptsByPid(Long pid){
+        // 数据权限
+    	DeptQueryCriteria criteria = new DeptQueryCriteria ();
+    	criteria.setPid(pid);
+        List<DeptDto> deptDtos = deptService.queryAll(criteria);
+        return new ResponseEntity<>(deptService.buildTree(deptDtos),HttpStatus.OK);
+    }
+
+    @ApiOperation("查询部门")
+    @GetMapping(value = "/getAllDpets")
+//    @PreAuthorize("@el.check('user:list','dept:list')")
+    public  Result<Object> getAllDpets(DeptQueryCriteria criteria, SearchVo searchVo){
+        // 数据权限
+        criteria.setIds(dataScope.getDeptIds());
+        if(searchVo!=null && searchVo.getEndDate()!=null && searchVo.getStartDate()!=null){
+            List<Timestamp> createTime  =  new ArrayList<Timestamp>();
+
+            Timestamp t1 = Timestamp.valueOf(searchVo.getStartDate() +" 00:00:00");
+            Timestamp t2 = Timestamp.valueOf(searchVo.getEndDate()+" 00:00:00");
+            createTime.add(t1);
+            createTime.add(t2);
+            criteria.setCreateTime(createTime);
+        }
+        List<DeptDto> deptDtos = deptService.queryAll(criteria);
+        for(DeptDto ik : deptDtos){
+        	//设置部门
+        }
+        return new ResultUtil<Object>().setData(deptService.buildTree(deptDtos));
+        //return new ResponseEntity<>(deptService.buildTree(deptDtos),HttpStatus.OK);
+    }
+
+    @Log("查询岗位")
+    @ApiOperation("查询岗位")
+    @GetMapping(value = "getDpetById")
+    @PreAuthorize("@el.check('job:list','user:list')")
+    @AnonymousAccess
+    public ResponseEntity<Object> getDpetById(Long id){
+        return new ResponseEntity<>(deptService.findById(id),HttpStatus.OK);
+    }
+    @Log("新增部门")
+    @ApiOperation("新增部门")
+    @PostMapping
+    @PreAuthorize("@el.check('dept:add')")
+    public ResponseEntity<Object> create(@Validated @RequestBody Dept resources){
+        if (resources.getId() != null) {
+            throw new BadRequestException("A new "+ ENTITY_NAME +" cannot already have an ID");
+        }
+        resources.setCreateTime(new DateTime().toTimestamp());
+        return new ResponseEntity<>(deptService.create(resources),HttpStatus.CREATED);
+    }
+
+    @Log("修改部门")
+    @ApiOperation("修改部门")
+    @PutMapping
+    @PreAuthorize("@el.check('dept:edit')")
+    public ResponseEntity<Object> update(@Validated(Dept.Update.class) @RequestBody Dept resources){
+        deptService.update(resources);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("删除部门")
+    @ApiOperation("删除部门")
+    @DeleteMapping
+    @PreAuthorize("@el.check('dept:del')")
+    public ResponseEntity<Object> delete(@RequestBody Set<Long> ids){
+        Set<DeptDto> deptDtos = new HashSet<>();
+        for (Long id : ids) {
+            List<Dept> deptList = deptService.findByPid(id);
+            deptDtos.add(deptService.findById(id));
+            if(CollectionUtil.isNotEmpty(deptList)){
+                deptDtos = deptService.getDeleteDepts(deptList, deptDtos);
+            }
+        }
+        try {
+            deptService.delete(deptDtos);
+        }catch (Throwable e){
+            ThrowableUtil.throwForeignKeyException(e, "所选部门中存在岗位或者角色关联，请取消关联后再试");
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @Log("删除岗位")
+    @ApiOperation("删除岗位")
+    @PostMapping(value = "deleteByIds")
+    @PreAuthorize("@el.check('job:del')")
+    public ResponseEntity<Object> deleteByIds(@RequestParam(name = "ids[]") Set<Long> ids){
+        Set<DeptDto> deptDtos = new HashSet<>();
+        for (Long id : ids) {
+            List<Dept> deptList = deptService.findByPid(id);
+            deptDtos.add(deptService.findById(id));
+            if(CollectionUtil.isNotEmpty(deptList)){
+                deptDtos = deptService.getDeleteDepts(deptList, deptDtos);
+            }
+        }
+        try {
+            deptService.delete(deptDtos);
+        }catch (Throwable e){
+            ThrowableUtil.throwForeignKeyException(e, "所选部门中存在岗位或者角色关联，请取消关联后再试");
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Log("查询街道")
+    @ApiOperation("查询街道")
+    @GetMapping(value = "/getStreet")
+    public Result<Object> getStreet(){
+        DeptQueryCriteria criteria = new DeptQueryCriteria ();
+        criteria.setName("街道");
+        List<DeptDto> deptDtos = deptService.queryAll(criteria);
+        return ResultUtil.data(deptDtos);
+    }
+
+    @Log("根据街道id查询社区")
+    @ApiOperation("根据街道id查询社区")
+    @GetMapping(value = "/getCommunity")
+    public Result<Object> getCommunity(Long streetId){
+        DeptQueryCriteria criteria = new DeptQueryCriteria ();
+        criteria.setPid(streetId);
+        List<DeptDto> deptDtos = deptService.queryAll(criteria);
+        return ResultUtil.data(deptDtos);
+    }
+
+
+    @Log("获取所有部门数据")
+    @ApiOperation("获取所有部门数据")
+    @GetMapping(value = "/getAllDepList")
+    public Result<Object> getAllDepList(){
+        List<Dept> allDeptList = deptService.getAllDeptList();
+        return ResultUtil.data(allDeptList);
+    }
+
+}

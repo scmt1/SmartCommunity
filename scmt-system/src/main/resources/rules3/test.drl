@@ -1,0 +1,73 @@
+package me.zhengjie.drools.drools
+//一下为二手营业用房和二手自住住房的规则！！！！！！！！！！！！！！！！！
+
+//fcType  28 二手营业用房  29二手自住住房
+
+//规则一：营业用房没有封顶限制， 只按日期变动比例  3%  2% 1%
+rule "yyyf1"
+when
+    message :Message(fcType == 28 && htsj >= "01-03-2020" && htsj <= "31-08-2020")
+then
+    message.setResultMoney((message.getMoney() * 0.03));
+    message.setResultType("3%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第一条规则补助 3%  补助金额为：" + message.getResultMoney());
+end
+
+rule "yyyf2"
+when
+    message :Message(fcType == 28 && htsj >= "01-09-2020" && htsj <= "28-02-2021")
+then
+    message.setResultMoney((message.getMoney() * 0.02));
+    message.setResultType("2%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第二条规则补助 2%  补助金额为：" + message.getResultMoney());
+end
+
+rule "yyyf3"
+when
+    message :Message(fcType == 28 && htsj >= "01-03-2021" && htsj <= "28-02-2022")
+then
+    message.setResultMoney((message.getMoney() * 0.01));
+    message.setResultType("1%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第三条规则补助 1%  补助金额为：" + message.getResultMoney());
+end
+
+
+//规则二： 自住住房除了比例，还有封顶限制
+rule "zhzf1"
+when
+    message :Message(fcType == 29 && htsj >= "01-03-2020" && htsj <= "31-08-2020")
+then
+    message.setResultMoney((message.getMoney() * 0.03) > 50000 ? 50000 : (message.getMoney() * 0.03));
+    message.setResultType("3%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第一条规则补助 3%  补助金额为：" + message.getResultMoney());
+end
+
+rule "zhzf2"
+when
+    message :Message(fcType == 29 && htsj >= "01-09-2020" && htsj <= "28-02-2021")
+then
+    message.setResultMoney((message.getMoney() * 0.02) > 50000 ? 50000 : (message.getMoney() * 0.02));
+    message.setResultType("2%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第二条规则补助 2%  补助金额为：" + message.getResultMoney());
+end
+
+rule "zhzf3"
+when
+    message :Message(fcType == 29 && htsj >= "01-03-2021" && htsj <= "28-02-2022")
+then
+    message.setResultMoney((message.getMoney() * 0.01) > 50000 ? 50000 : (message.getMoney() * 0.01));
+    message.setResultType("1%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第三条规则补助 1%  补助金额为：" + message.getResultMoney());
+end

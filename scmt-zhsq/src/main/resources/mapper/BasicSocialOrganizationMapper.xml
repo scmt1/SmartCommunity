@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicSocialOrganizationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicSocialOrganization">
+        <id column="id" property="id"/>
+        <result column="type" property="type"/>
+        <result column="name" property="name"/>
+        <result column="address" property="address"/>
+        <result column="address_id" property="addressId"/>
+        <result column="legal_person" property="legalPerson"/>
+        <result column="legal_phone" property="legalPhone"/>
+        <result column="legal_card" property="legalCard"/>
+        <result column="street_id" property="streetId"/>
+        <result column="community_id" property="communityId"/>
+        <result column="grids_id" property="gridsId"/>
+        <result column="grid_person_id" property="gridPersonId"/>
+        <result column="grid_person_name" property="gridPersonName"/>
+        <result column="org_code" property="orgCode"/>
+        <result column="principal_name" property="principalName"/>
+        <result column="principal_phone" property="principalPhone"/>
+        <result column="head_portrait" property="headPortrait"/>
+        <result column="police_principal_phone" property="policePrincipalPhone"/>
+        <result column="police_principal" property="policePrincipal"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="position" property="position"/>
+        <result column="create_id" property="createId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_id" property="updateId"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="delete_id" property="deleteId"/>
+        <result column="delete_time" property="deleteTime"/>
+        <result column="merchant_sort" property="merchantSort"/>
+        <result column="business_scope" property="businessScope"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, type, name, address, address_id,merchant_sort,business_scope, legal_person, legal_phone, legal_card, street_id, community_id, grids_id, grid_person_id, grid_person_name, org_code, principal_name, principal_phone, head_portrait, police_principal_phone, police_principal, is_delete, position, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+<!--    社会组织按社区统计-->
+    <select id="getCommunityCountData" resultType="map">
+        SELECT
+            basic_social_organization.community_name,
+            basic_social_organization.community_id,
+            basic_grids.`name` AS gridName,
+              SUM(case when basic_social_organization.type='1' then 1 ELSE 0 end) as shanghu,
+              SUM(case when basic_social_organization.type='2' then 1 ELSE 0 end) as qiye,
+              SUM(case when basic_social_organization.type='3' then 1 ELSE 0 end) as tuanti,
+              SUM(case when basic_social_organization.type='4' then 1 ELSE 0 end) as jiaoyu,
+              SUM(case when basic_social_organization.type='5' then 1 ELSE 0 end) as zuzhi,
+              SUM(case when basic_social_organization.type='6' then 1 ELSE 0 end) as weisheng,
+              SUM(case when basic_social_organization.type='7' then 1 ELSE 0 end) as qita
+        FROM
+            basic_social_organization
+        LEFT OUTER JOIN basic_grids basic_grids ON basic_grids.id = basic_social_organization.grids_id
+        <where>
+            basic_social_organization.is_delete = 0
+            <if test="basicSocialOrganization != null">
+                <if test="basicSocialOrganization.streetId != null and basicSocialOrganization.streetId != ''">
+                    and basic_social_organization.street_id = #{basicSocialOrganization.streetId}
+                </if>
+                <if test="basicSocialOrganization.communityId != null and basicSocialOrganization.communityId != ''">
+                    and basic_social_organization.community_id = #{basicSocialOrganization.communityId}
+                </if>
+                <if test="basicSocialOrganization.gridsId != null and basicSocialOrganization.gridsId != ''">
+                    and basic_social_organization.grids_id = #{basicSocialOrganization.gridsId}
+                </if>
+            </if>
+        </where>
+        GROUP BY basic_social_organization.community_id
+    </select>
+
+<!--    社会组织按网格统计-->
+    <select id="getGridsCountData" resultType="map">
+       SELECT
+            basic_grids.`name` AS gridName,
+            SUM( CASE WHEN basic_social_organization.type = '1' THEN 1 ELSE 0 END ) AS shanghu,
+            SUM( CASE WHEN basic_social_organization.type = '2' THEN 1 ELSE 0 END ) AS qiye,
+            SUM( CASE WHEN basic_social_organization.type = '3' THEN 1 ELSE 0 END ) AS tuanti,
+            SUM( CASE WHEN basic_social_organization.type = '4' THEN 1 ELSE 0 END ) AS jiaoyu,
+            SUM( CASE WHEN basic_social_organization.type = '5' THEN 1 ELSE 0 END ) AS zuzhi,
+            SUM( CASE WHEN basic_social_organization.type = '6' THEN 1 ELSE 0 END ) AS weisheng,
+            SUM( CASE WHEN basic_social_organization.type = '7' THEN 1 ELSE 0 END ) AS qita
+        FROM
+            basic_social_organization
+            LEFT OUTER JOIN basic_grids basic_grids ON basic_grids.id = basic_social_organization.grids_id
+        <where>
+            <if test="basicSocialOrganization != null">
+                <if test="basicSocialOrganization.streetId != null and basicSocialOrganization.streetId != ''">
+                    and basic_social_organization.street_id = #{basicSocialOrganization.streetId}
+                </if>
+                <if test="basicSocialOrganization.communityId != null and basicSocialOrganization.communityId != ''">
+                    and basic_social_organization.community_id = #{basicSocialOrganization.communityId}
+                </if>
+                <if test="basicSocialOrganization.gridsId != null and basicSocialOrganization.gridsId != ''">
+                    and basic_social_organization.grids_id = #{basicSocialOrganization.gridsId}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+            basic_grids.`name`
+    </select>
+
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.BasicSocialOrganization">
+       SELECT
+            t.id,
+            t1.NAME as type,
+            t.NAME,
+            t.address,
+            t.address_id,
+            t.legal_person,
+            t.legal_phone,
+            t.legal_card,
+            t.street_id,
+            t.community_id,
+            t.grids_id,
+            t.grid_person_id,
+            t.grid_person_name,
+            t.org_code,
+            t.principal_name,
+            t.principal_phone,
+            t.head_portrait,
+            t.police_principal_phone,
+            t.police_principal,
+            t.is_delete,
+            t.position,
+            t.create_id,
+            t.create_time,
+            t.update_id,
+            t.update_time,
+            t.delete_id,
+            t.delete_time
+        FROM
+            basic_social_organization t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'socialOrganizationTypeData' AND t1.number = t.type
+             ${ew.customSqlSegment}
+    </select>
+</mapper>

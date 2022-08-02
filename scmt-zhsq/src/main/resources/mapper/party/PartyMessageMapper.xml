@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyMessageMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.party.PartyMessage">
+		<id column="id" property="id" />
+		<result column="msg_type" property="msgType" />
+		<result column="party_committee_id" property="partyCommitteeId" />
+		<result column="party_branch_id" property="partyBranchId" />
+		<result column="content" property="content" />
+		<result column="create_time" property="createTime" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, msg_type, party_committee_id, party_branch_id, content,
+		create_time
+	</sql>
+
+
+
+</mapper>

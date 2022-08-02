@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.attendance.AttendanceRecordMapper">
+
+
+    <!--   视图   考勤记录和用户和所属网格  -->
+    <select id="getUsers" resultType="java.util.Map">
+        SELECT u.real_name realName,u.id userId,IFNULL(ar.`status`,0) status
+        FROM grid_attendance_record ar
+        right join base_user u on ar.user_id = u.id
+        where u.type =2 and u.status = 1
+
+        <if test="query.gridId != null and query.gridId != ''">
+            and u.grid_id =#{query.gridId}
+        </if>
+        <if test="query.date != null and query.date != ''">
+            and ar.date = #{query.date}
+        </if>
+
+    </select>
+
+    <!-- 联表-->
+    <select id="getArchivesList" resultType="java.util.Map">
+        SELECT u.avatar head,CONCAT(u.real_name,'(',u.phone,')') name,u.id userId
+        FROM base_user u
+        LEFT JOIN grid_user_info gui ON u.id = gui.user_id
+        where u.id !=1 and u.type = 2  and u.status = 1
+
+        <if test="query.gridList != null and query.gridList.size >0">
+            <foreach item="gridId" index="index" collection="query.gridList" >
+                <if test="query.gridList.size ==1">
+                    AND   find_in_set(#{gridId},u.grid_id)
+                </if>
+                <if test="query.gridList.size >1">
+                    <choose>
+                        <when test="index == 0">
+                            AND   (find_in_set(#{gridId},u.grid_id)
+                        </when>
+                        <when test="index != 0 and index != query.gridList.size -1">
+                            or   find_in_set(#{gridId},u.grid_id)
+                        </when>
+                        <otherwise>
+                            or   find_in_set(#{gridId},u.grid_id))
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+
+        <if test="query.fileType != null and query.fileType != ''">
+            and  find_in_set(gui.file_type,#{query.fileType})
+        </if>
+    </select>
+    <select id="loadAllByQuery" resultType="me.zhengjie.dto.AttendanceRecordDto">
+        SELECT u.real_name userName,u.id userId,IFNULL(ar.`status`,0) status, u.grid_id gridId
+        ,u.phone,ar.date,ar.id,DATE_FORMAT(ar.date,'%Y-%m-%d') createTime
+        ,u.person_id personId
+        FROM grid_attendance_record ar
+        right join base_user u on ar.user_id = u.id
+        LEFT JOIN  grid_user_info ui on ui.user_id = u.id
+        where u.type = 2  and u.status = 1 and ui.file_type in (3,4)
+        <if test="query.gridList != null and query.gridList.size >0">
+            <foreach item="gridId" index="index" collection="query.gridList" >
+                <if test="query.gridList.size ==1">
+                    AND   find_in_set(#{gridId},u.grid_id)
+                </if>
+                <if test="query.gridList.size >1">
+                    <choose>
+                        <when test="index == 0">
+                            AND   (find_in_set(#{gridId},u.grid_id)
+                        </when>
+                        <when test="index != 0 and index != query.gridList.size -1">
+                            or   find_in_set(#{gridId},u.grid_id)
+                        </when>
+                        <otherwise>
+                            or   find_in_set(#{gridId},u.grid_id))
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and u.real_name like CONCAT('%',#{query.name},'%')
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and u.phone like CONCAT('%',#{query.phone},'%')
+        </if>
+        <if test="query.queryStr != null and query.queryStr != ''">
+            and (
+            u.phone like CONCAT('%',#{query.queryStr},'%')
+            or u.real_name like CONCAT('%',#{query.queryStr},'%')
+            )
+        </if>
+        <if test="query.dateFrom != null and query.dateFrom != ''">
+            and DATE_FORMAT(ar.date,'%Y-%m-%d')&gt;= #{query.dateFrom}
+        </if>
+        <if test="query.dateTo != null and query.dateTo != ''">
+            and DATE_FORMAT(ar.date,'%Y-%m-%d') &lt;= #{query.dateTo}
+        </if>
+
+    </select>
+    <select id="getUserIds" resultType="java.lang.String">
+        SELECT GROUP_CONCAT(DISTINCT u.id)
+        FROM base_user u
+        LEFT JOIN grid_user_info gui ON u.id = gui.user_id
+        where u.id !=1 and u.type = 2  and u.status = 1
+
+        <if test="query.gridList != null and query.gridList.size >0">
+            <foreach item="gridId" index="index" collection="query.gridList" >
+                <if test="query.gridList.size ==1">
+                    AND   find_in_set(#{gridId},u.grid_id)
+                </if>
+                <if test="query.gridList.size >1">
+                    <choose>
+                        <when test="index == 0">
+                            AND   (find_in_set(#{gridId},u.grid_id)
+                        </when>
+                        <when test="index != 0 and index != query.gridList.size -1">
+                            or   find_in_set(#{gridId},u.grid_id)
+                        </when>
+                        <otherwise>
+                            or   find_in_set(#{gridId},u.grid_id))
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+
+        <if test="query.fileType != null and query.fileType != ''">
+            and   find_in_set(gui.file_type,#{query.fileType})
+        </if>
+
+    </select>
+    <select id="getPostName" resultType="java.lang.String">
+ SELECT post FROM t_zhsq_grid_member
+WHERE
+ id = #{personId}
+    </select>
+</mapper>

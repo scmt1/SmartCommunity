@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.YWTZhsqGridMemberMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqGridMember">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="type" property="type" />
+        <result column="sex" property="sex" />
+        <result column="birthday" property="birthday" />
+        <result column="nation" property="nation" />
+        <result column="id_card" property="idCard" />
+        <result column="phone" property="phone" />
+        <result column="fixed_telephone" property="fixedTelephone" />
+        <result column="personal_profile" property="personalProfile" />
+        <result column="head_portrait" property="headPortrait" />
+        <result column="street_id" property="streetId" />
+        <result column="community_Id" property="communityId" />
+        <result column="post" property="post" />
+        <result column="post_level" property="postLevel" />
+        <result column="responsibilities" property="responsibilities" />
+        <result column="position" property="position" />
+        <result column="order_number" property="orderNumber" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, type, sex, birthday, nation, id_card, phone, fixed_telephone, personal_profile, head_portrait, street, community,post, post_level, responsibilities, position, order_number, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+
+    <select id="getStatisticsData"  resultType="map">
+        SELECT
+        t.street_name,
+        t.community_name,
+        any_value(t.post),
+        t2.`name` as owned_grid,
+        count( t.id ) AS allCount,
+        SUM( CASE WHEN t.post = "网格长" THEN 1 ELSE 0 END ) AS wgzCount,
+        SUM( CASE WHEN t.post = "兼职网格员" THEN 1 ELSE 0 END ) AS jzwgyCount,
+        SUM( CASE WHEN t.post = "专职网格员" THEN 1 ELSE 0 END ) AS zzwgyCount
+        FROM
+        t_zhsq_grid_member t
+        left join rela_grids_person_grids t1 on t1.grids_person_id = t.id
+        left join basic_grids t2 on t2.id = t1.grids_id
+        <where>
+            t.is_delete=0
+            <if test="gridMember!=null">
+                <if test="gridMember.streetId!=null and gridMember.streetId!=''">
+                    and t.street_id =#{gridMember.streetId}
+                </if>
+                <if test="gridMember.communityId!=null and gridMember.communityId!=''">
+                   and t.community_id =#{gridMember.communityId}
+                </if>
+                <if test="gridMember.ownedGrid!=null and gridMember.ownedGrid!=''">
+                    and t2.id = #{gridMember.ownedGrid}
+                </if>
+            </if>
+
+        </where>
+        GROUP BY
+            street_name,
+            community_name ,
+            owned_grid
+        ORDER BY
+            t.street_name ,
+            t.community_name ,
+            owned_grid desc
+    </select>
+
+</mapper>

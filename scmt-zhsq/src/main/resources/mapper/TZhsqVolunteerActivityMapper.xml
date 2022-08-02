@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqVolunteerActivityMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqVolunteerActivity">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="activitiy_address" property="activitiyAddress"/>
+        <result column="start_date1" property="startDate1"/>
+        <result column="end_date1" property="endDate1"/>
+        <result column="organizer" property="organizer"/>
+        <result column="participant" property="participant"/>
+        <result column="activity_profile" property="activityProfile"/>
+        <result column="position" property="position"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="create_id" property="createId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_id" property="updateId"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="delete_id" property="deleteId"/>
+        <result column="delete_time" property="deleteTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, activitiy_address, start_date, end_date, organizer, participant, activity_profile, position, order_number, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+    <select id="selectActivityByVtId" resultMap="BaseResultMap">
+        select
+             t1.*
+        from rela_volunteer_activity t
+        left join t_zhsq_volunteer_activity t1 on t.activity_id = t1.id
+        where
+            t.volunteer_id =  #{vtId}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="me.zhengjie.mapper.park.ParkingDeviceMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.park.ParkingDevice">
+		<id column="id" property="id" />
+		<result column="parking_id" property="parkingId" />
+		<result column="time" property="time" />
+		<result column="device_id" property="deviceId" />
+		<result column="device_name" property="deviceName" />
+		<result column="rssi" property="rssi" />
+		<result column="pass_time" property="passTime" />
+		<result column="sequence" property="sequence" />
+		<result column="battary" property="battary" />
+		<result column="parking_status" property="parkingStatus" />
+		<result column="version" property="version" />
+		<result column="errcode" property="errcode" />
+		<result column="longitude" property="longitude" />
+		<result column="latitude" property="latitude" />
+		<result column="is_enabled" property="isEnabled" />
+		<result column="remark" property="remark" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+		<result column="is_deleted" property="isDeleted" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, parking_id, time, device_id, device_name, rssi,
+		pass_time, sequence, battary, parking_status, version, errcode,
+		longitude, latitude, is_enabled, remark, create_time, update_time,
+		is_deleted
+	</sql>
+
+
+	<select id="getgetParkingDeviceList"
+		resultType="me.zhengjie.entity.park.ParkDeviceList">
+		SELECT
+			parking_device.id AS id,
+			parking_device.device_id AS deviceId,
+			parking_device.device_name AS deviceName,
+			parking_device.is_enabled AS isEnabled,
+			parking_device.parking_id AS parkingId,
+			parking.parking_name AS parkingName,
+			parking_device.longitude AS longitude,
+			parking_device.latitude AS latitude,
+			parking_device.parking_status as parkingStatus,
+			parking_device.remark as remark,
+			parking_device.create_time as createTime
+		FROM
+			parking_device
+		LEFT JOIN parking ON parking_device.parking_id = parking.id
+		WHERE
+			parking_device.is_deleted=0
+			<if test="streetId != '' and streetId != null">
+				AND	parking.street_id = #{streetId}
+			</if>
+			<if test="communityId != '' and communityId != null">
+				AND	parking.community_id = #{communityId}
+			</if>
+			<if test="gridId != '' and gridId != null">
+				AND	parking.grid_id = #{gridId}
+			</if>
+			<if test="keywords!=''">
+				AND	parking_device.device_name like '%${keywords}%' or parking_device.device_name like
+					'%${keywords}%'
+			</if>
+	</select>
+
+</mapper>

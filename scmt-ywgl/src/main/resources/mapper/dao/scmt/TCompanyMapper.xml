@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.dao.mapper.TCompanyMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.dao.entity.TCompany">
+        <id column="id" property="id" />
+        <result column="company_name" property="companyName" />
+        <result column="responsible" property="responsible" />
+        <result column="position_num" property="positionNum" />
+        <result column="position_char" property="positionChar" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="is_delete" property="isDelete" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="company_nature" property="companyNature" />
+        <result column="company_phone" property="companyPhone" />
+        <result column="company_email" property="companyEmail" />
+        <result column="business_licence" property="businessLicence" />
+        <result column="org_code" property="orgCode" />
+        <result column="found_date" property="foundDate" />
+        <result column="registry_address" property="registryAddress" />
+        <result column="industry_type" property="industryType" />
+        <result column="enterprise_relation" property="enterpriseRelation" />
+        <result column="registry_type" property="registryType" />
+        <result column="post_code" property="postCode" />
+        <result column="enterprise_scale" property="enterpriseScale" />
+        <result column="four_enterprise" property="fourEnterprise" />
+        <result column="people_engaged_lastYear" property="peopleEngagedLastyear" />
+        <result column="incom_lastYear" property="incomLastyear" />
+        <result column="total_assets" property="totalAssets" />
+        <result column="business_address" property="businessAddress" />
+        <result column="business_scope" property="businessScope" />
+        <result column="key_regulatory_level" property="keyRegulatoryLevel" />
+        <result column="business_status" property="businessStatus" />
+        <result column="upEnterprise_name" property="upenterpriseName" />
+        <result column="up_org_code" property="upOrgCode" />
+        <result column="reporter" property="reporter" />
+        <result column="remark" property="remark" />
+        <result column="safety_supervision_uthority" property="safetySupervisionUthority" />
+        <result column="unit_safety_manage" property="unitSafetyManage" />
+        <result column="safety_person_num" property="safetyPersonNum" />
+        <result column="safety_tec_num" property="safetyTecNum" />
+        <result column="unit_response_person" property="unitResponsePerson" />
+        <result column="response_person_mobile" property="responsePersonMobile" />
+        <result column="charge_safety_person" property="chargeSafetyPerson" />
+        <result column="safety_person_mobile" property="safetyPersonMobile" />
+        <result column="safety_manage_responser" property="safetyManageResponser" />
+        <result column="manage_responser_mobile" property="manageResponserMobile" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, company_name, responsible, position_num, position_char, create_id, create_time, is_delete, update_time, update_id, company_nature, company_phone,company_email, business_licence, org_code, found_date, registry_address, industry_type, enterprise_relation, registry_type, post_code, enterprise_scale, four_enterprise, people_engaged_lastYear, incom_lastYear, total_assets, business_address, business_scope, key_regulatory_level, business_status, upEnterprise_name, up_org_code, reporter, remark,
+safety_supervision_uthority, unit_safety_manage, safety_person_num, safety_tec_num, unit_response_person, response_person_mobile, charge_safety_person, safety_person_mobile,safety_manage_responser,manage_responser_mobile
+    </sql>
+
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.iot.ParkingBarrierMapper">
+
+    <select id="selectByQuery" resultType="java.util.Map">
+            select  id,grid_id gridId,property_id propertyId,`name`,address,code,remark,status,DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') createTime
+            from parking_barrier
+            <where>
+                <if test="query.streetId != null and query.streetId != ''">
+                    and find_in_set(grid_id, (
+                        select
+                            group_concat(id Separator ',') id
+                        from
+                            basic_grids
+                        where
+                            street_id = #{query.streetId}
+                            and is_delete = 0)
+                    )
+                </if>
+                <if test="query.communityId != null and query.communityId != ''">
+                    and find_in_set(grid_id, (
+                        select
+                            group_concat(id Separator ',') id
+                        from
+                            basic_grids
+                        where
+                            community_id = #{query.communityId}
+                            and is_delete = 0)
+                    )
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    and find_in_set(grid_id,#{query.gridId})
+                </if>
+                <if test="query.propertyId != null and query.propertyId != ''">
+                    and find_in_set(property_id,#{query.propertyId})
+                </if>
+                <if test="query.status != null and query.status != ''">
+                    and  `status` = #{query.status}
+                </if>
+                <if test="query.queryStr != null and query.queryStr != ''">
+                    and (
+                    `name` like CONCAT('%',#{query.queryStr},'%')
+                    or   code like CONCAT('%',#{query.queryStr},'%')
+                    )
+                </if>
+
+            </where>
+        order by create_time desc
+    </select>
+
+</mapper>

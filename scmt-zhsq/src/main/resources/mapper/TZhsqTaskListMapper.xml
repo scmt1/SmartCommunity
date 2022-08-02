@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqTaskListMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqTaskList">
+        <id column="id" property="id" />
+        <result column="task_sort" property="taskSort" />
+        <result column="task_name" property="taskName" />
+        <result column="community" property="community" />
+        <result column="grid" property="grid" />
+        <result column="sponsor" property="sponsor" />
+        <result column="task_starting_time" property="taskStartingTime" />
+        <result column="task_end_time" property="taskEndTime" />
+        <result column="executor" property="executor" />
+        <result column="task_status" property="taskStatus" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="is_delete" property="isDelete" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, task_sort, task_name, community, grid, sponsor, task_starting_time, task_end_time, executor, task_status, create_time, create_id, update_time, update_id, is_delete
+    </sql>
+
+</mapper>

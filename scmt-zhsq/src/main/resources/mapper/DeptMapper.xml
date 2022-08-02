@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.GridDeptMapper">
+    <!--  视图 部门与社区干部连表  -->
+    <select id="selectDeptTree" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            d.id,
+            d.`name`,
+        IF
+            ( d.parent_id = 0, '-', pd.`name` ) parentName,
+            d.parent_id parentId,
+            d.attribute,
+            d.supervisor,
+            d.type,
+            d.introduction,
+            d.address
+        FROM
+            grid_dept d
+            LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+            LEFT JOIN grid_dept_type dt ON d.type = dt.id
+        ORDER BY
+            id
+    </select>
+    <!--    分页查询街道-->
+    <select id="loadByPage" resultType="me.zhengjie.entity.GridDept">
+        SELECT
+        d.id,
+        d.`name`,
+        IF
+        ( d.parent_id = 0, '-', pd.`name` ) parentName,
+        d.parent_id parentId,
+        d.attribute,
+        d.supervisor,
+        d.type,
+        d.introduction,
+        d.address
+        FROM
+        grid_dept d
+        LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+        LEFT JOIN grid_dept_type dt ON d.type = dt.id
+
+        <where>
+            d.parent_id != 0
+            <if test="query.name != null and query.name != ''">
+                AND d.name like CONCAT('%',CONCAT(#{query.name},'%'))
+            </if>
+            <if test="query.attribute != null and query.attribute != ''">
+                AND d.attribute = #{query.attribute}
+            </if>
+        </where>
+        ORDER BY
+        id
+    </select>
+    <!--    查询全部街道-->
+    <select id="loadNotPage" resultType="me.zhengjie.entity.GridDept">
+        SELECT
+        d.id,
+        d.`name`,
+        IF
+        ( d.parent_id = 0, '-', pd.`name` ) parentName,
+        d.parent_id parentId,
+        d.attribute,
+        d.supervisor,
+        d.type,
+        d.introduction,
+        d.address
+        FROM
+        grid_dept d
+        LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+        LEFT JOIN grid_dept_type dt ON d.type = dt.id
+
+        <where>
+            d.parent_id != 0
+            <if test="query.name != null and query.name != ''">
+                AND d.name like CONCAT('%',CONCAT(#{query.name},'%'))
+            </if>
+            <if test="query.attribute != null and query.attribute != ''">
+                AND d.attribute = #{query.attribute}
+            </if>
+        </where>
+        ORDER BY
+        id
+    </select>
+    <!--  查询社区、部门  -->
+    <select id="selectDeptTreeByParentId" resultType="me.zhengjie.entity.GridDept">
+        SELECT
+            d.id,
+            d.`name`,
+        IF
+            ( d.parent_id = 0, '-', pd.`name` ) parentName,
+            d.parent_id parentId,
+            d.attribute,
+            d.supervisor,
+            d.type,
+            d.introduction,
+            d.address
+        FROM
+            grid_dept d
+            LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+            LEFT JOIN grid_dept_type dt ON d.type = dt.id
+
+        <where>
+            <if test="parentId != null and parentId != ''">
+                AND d.parent_id = #{parentId}
+            </if>
+<!--            <if test="query.name != null and query.name != ''">-->
+<!--                AND d.name = #{query.name}-->
+<!--            </if>-->
+<!--            <if test="query.attribute != null and query.attribute != ''">-->
+<!--                AND d.attribute = #{query.parent_id}-->
+<!--            </if>-->
+        </where>
+        ORDER BY
+        id
+    </select>
+    <select id="loadByQuery" resultType="me.zhengjie.entity.GridDept">
+        SELECT
+        d.id,
+        d.`name`,
+        IF
+        ( d.parent_id = 0, '-', pd.`name` ) parentName,
+        d.parent_id parentId,
+        d.attribute,
+        d.supervisor
+        FROM
+        grid_dept d
+        LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+        LEFT JOIN grid_dept_type dt ON d.type = dt.id
+        ORDER BY
+        id
+        <where>
+            <if test="query.attribute != null and query.attribute != ''">
+                AND d.attribute = #{query.attribute}
+            </if>
+        </where>
+    </select>
+    <select id="loadCommunityDeptByStreet" resultType="com.alibaba.fastjson.JSONObject">
+        select id,`name` from grid_dept where attribute = 2
+        <if test="streetId != null and streetId != ''">
+            and parent_id = #{streetId}
+        </if>
+    </select>
+    <select id="getSelectByType" resultType="com.alibaba.fastjson.JSONObject">
+        select id,`name` from grid_dept
+        <choose>
+            <when test="params.type == 1">
+                where attribute = 2
+                <if test="params.parentId != null">
+                    and parent_id = #{params.parentId}
+                </if>
+            </when>
+            <otherwise>
+                where attribute = 3
+                <if test="params.parentId != null">
+                    and parent_id = #{params.parentId}
+                </if>
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--查询用户数据权限树-->
+    <select id="selectDept" resultType="me.zhengjie.entity.GridDeptTree">
+        SELECT
+            id,
+            NAME AS label,
+            parent_id,
+            attribute
+        FROM
+            grid_dept
+        WHERE
+            attribute IN (0, 1, 2 )
+            AND grid_dept.is_deleted = 0 UNION ALL
+        SELECT
+            id,
+            NAME AS label,
+            ifnull( community_id, 0 ) AS parent_id,
+            '3' AS attribute
+        FROM
+            basic_grids
+        WHERE
+            basic_grids.is_delete = 0
+    </select>
+
+    <!--根据id查询所属街道-->
+    <select id="selectDeptById" resultType="com.alibaba.fastjson.JSONObject">
+        select
+            id,name
+        from
+            grid_dept
+        where
+            id=#{id}
+            and is_deleted = 0
+    </select>
+
+    <!--根据所属社区id查询所属街道-->
+    <select id="selectDeptByCommunityId" resultType="com.alibaba.fastjson.JSONObject">
+        select
+            id,name
+        from
+            grid_dept
+        where
+            id = (select parent_id from grid_dept where id=#{id} and is_deleted = 0)
+            and is_deleted = 0
+    </select>
+
+    <!--根据所属网格id查询所属街道-->
+    <select id="selectDeptByGridId" resultType="com.alibaba.fastjson.JSONObject">
+        select
+            id,name
+        from
+            grid_dept
+        where
+            id = (select street_id from basic_grids	where id=#{id} and is_delete = 0)
+            and is_deleted = 0
+    </select>
+
+    <!--根据id查询所属社区-->
+    <select id="selectCommunityById" resultType="com.alibaba.fastjson.JSONObject">
+        select
+            id,name
+        from
+            grid_dept
+        where
+            id=#{id}
+            and is_deleted = 0
+    </select>
+
+    <!--根据网格id查询所属社区-->
+    <select id="selectCommunityByGridId" resultType="com.alibaba.fastjson.JSONObject">
+        select
+            id,name
+        from
+            grid_dept
+        where
+            id = (select community_id from basic_grids	where id=#{id} and is_delete = 0)
+            and is_deleted = 0
+    </select>
+
+
+    <!--    获取区县街道社区树级数据-->
+    <select id="loadGridDeptAndGridTree" resultType="map">
+        SELECT
+        id,
+        NAME AS title,
+        parent_id AS pid,
+        create_time,
+        '1' AS lel
+        FROM
+        grid_dept
+        WHERE
+        attribute IN (0, 1, 2 )
+        AND grid_dept.is_deleted = 0
+        <if test="powerMap != null">
+            <if test="powerMap.streetId != null and powerMap.streetId != ''">
+                AND grid_dept.id = #{powerMap.streetId}
+                or grid_dept.parent_id = #{powerMap.streetId}
+            </if>
+            <if test="powerMap.communityId != null and powerMap.communityId != ''">
+                AND grid_dept.id = #{powerMap.communityId}
+                or grid_dept.id = (select parent_id from grid_dept where id = #{powerMap.communityId} )
+            </if>
+            <if test="powerMap.gridId != null and powerMap.gridId != ''">
+                AND grid_dept.id = (select street_id from basic_grids where id = #{powerMap.gridId} )
+                or grid_dept.id = (select community_id from basic_grids where id = #{powerMap.gridId} )
+            </if>
+        </if>
+
+        ORDER BY create_time
+    </select>
+    <!--    获取所有字典-->
+    <select id="loadAll" resultType="me.zhengjie.entity.GridDictionary">
+        SELECT
+            dict.NAME AS file_name,
+            dict.type AS type_name,
+            dict_detail.label AS name,
+            dict_detail.`value` AS number
+        FROM
+            dict
+            LEFT JOIN dict_detail ON dict.id = dict_detail.dict_id
+    </select>
+
+
+    <!--  查询所有社区 -->
+    <select id="loadAllCommunity" resultType="me.zhengjie.entity.GridDept">
+        SELECT
+        d.id,
+        d.`name`,
+        IF
+        ( d.parent_id = 0, '-', pd.`name` ) parentName,
+        d.parent_id parentId,
+        d.attribute,
+        d.supervisor,
+        d.type,
+        d.introduction,
+        d.address
+        FROM
+        grid_dept d
+        LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+        LEFT JOIN grid_dept_type dt ON d.type = dt.id
+        where  d.type='12'
+        ORDER BY
+        id
+    </select>
+
+    <!--  查询所有部门  -->
+    <select id="loadAllDept" resultType="me.zhengjie.entity.GridDept">
+        SELECT
+        d.id,
+        d.`name`,
+        IF
+        ( d.parent_id = 0, '-', pd.`name` ) parentName,
+        d.parent_id parentId,
+        d.attribute,
+        d.supervisor,
+        d.type,
+        d.introduction,
+        d.address
+        FROM
+        grid_dept d
+        LEFT JOIN grid_dept pd ON pd.id = d.parent_id
+        LEFT JOIN grid_dept_type dt ON d.type = dt.id
+        where  d.attribute='3'
+
+        ORDER BY
+        id
+    </select>
+
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.dao.mapper.TFormGeneratorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.dao.entity.TFormGenerator">
+        <id column="id" property="id" />
+        <result column="form_name" property="formName" />
+        <result column="json_str" property="jsonStr" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="is_delete" property="isDelete" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="remarke" property="remarke" />
+        <result column="proc_def_id" property="procDefId" />
+        <result column="proc_def_name" property="procDefName" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, form_name, json_str, create_time, create_id, update_time, update_id, is_delete, delete_id, delete_time, remarke,proc_def_id,proc_def_name
+    </sql>
+
+    <!--    分页列表-->
+    <select id="selectListPage" resultType="me.zhengjie.dao.entity.TFormGenerator">
+        SELECT
+            *
+        FROM
+            (
+            SELECT
+                a.id,
+                a.form_name,
+                a.json_str,
+                a.create_time,
+                a.create_id,
+                a.update_time,
+                a.update_id,
+                a.is_delete,
+                a.delete_id,
+                a.delete_time,
+                a.remarke,
+                b.username,
+                a.STATUS,
+                a.proc_def_id,
+                a.proc_def_name
+            FROM
+                t_form_generator a,
+                USER b
+            WHERE
+                a.is_delete = 0
+            AND a.create_id = b.id
+            ) aa
+         ${ew.customSqlSegment}
+        order by create_time desc
+    </select>
+
+
+</mapper>

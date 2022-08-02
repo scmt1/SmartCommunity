@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.jpush.PushMsgMapper">
+
+
+    <select id="loadMsgInWeb" resultType="java.util.Map">
+        select pm.message_type messageType,pm.details_id detailsId,pm.content,
+            pm.data,DATE_FORMAT(pm.create_date,'%Y-%m-%d %H:%i') createDate,pm.is_read isRead,ge.`status`
+            ,ge.code,ge.title,ge.urgent_type  urgentType
+            	,CONCAT('/events/eventsDetail?id=',pm.details_id,'&amp;sta=1') AS router
+           from (SELECT * FROM push_msg where app_type =3 and FIND_IN_SET(#{param.userId},user_ids)
+           ) pm
+            LEFT JOIN grid_events ge on pm.details_id =ge.id
+            LEFT JOIN grid_events_type et on et.id =ge.events_type_id
+                order by pm.create_date desc limit 20
+    </select>
+    <select id="loadOneMsgInWeb" resultType="java.util.Map">
+        select pm.message_type messageType,pm.details_id detailsId,pm.content,
+        pm.data,DATE_FORMAT(pm.create_date,'%Y-%m-%d %H:%i') createDate,pm.is_read isRead,ge.`status`
+        ,ge.code,ge.title,ge.urgent_type  urgentType
+        ,CONCAT('/events/eventsDetail?id=',pm.details_id,'&amp;sta=1') AS router
+        from (SELECT * FROM push_msg where app_type =3 and FIND_IN_SET(#{param.userId},user_ids)
+        <if test="param.messageId != null and param.messageId != ''">
+            AND id = #{param.messageId}
+        </if>
+        ) pm
+        LEFT JOIN grid_events ge on pm.details_id =ge.id
+        LEFT JOIN grid_events_type et on et.id =ge.events_type_id
+
+    </select>
+    <select id="getBasicHousingInfo" resultType="java.lang.String">
+        SELECT
+         CONCAT ( house_name,',',build_archive_name, unit, '单元', floor, door_number, '号' ) AS houseName
+        FROM
+         basic_housing
+        WHERE
+         id = #{housingId}
+    </select>
+    <select id="getUserPhone" resultType="java.util.Map">
+        SELECT id,phone FROM base_user where person_id =#{personUuid}
+    </select>
+</mapper>

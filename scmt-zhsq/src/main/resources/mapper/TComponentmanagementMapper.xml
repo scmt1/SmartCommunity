@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TComponentmanagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TComponentmanagement">
+        <id column="id" property="id" />
+        <id column="name" property="name" />
+        <id column="sort_code" property="sortCode" />
+        <id column="img_url" property="imgUrl" />
+        <id column="pid" property="pid" />
+        <id column="is_delete" property="isDelete" />
+        <id column="create_id" property="createId" />
+        <id column="create_time" property="createTime" />
+        <id column="update_id" property="updateId" />
+        <id column="update_time" property="updateTime" />
+        <id column="delete_id" property="deleteId" />
+        <id column="delete_time" property="deleteTime" />
+        <id column="is_label" property="isLabel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="TComponentmanagement">
+        id, name, sort_code, img_url, pid, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time, is_label
+    </sql>
+
+    <!--    分页查询部门-->
+    <select id="loadByPage" resultType="me.zhengjie.entity.TComponentmanagement">
+        SELECT d.id, d.name, pd.name parentName, d.pid, d.sort_code, d.img_url, d.create_time, d.is_label, d.name label
+        FROM t_componentManagement d
+        LEFT JOIN t_componentManagement pd ON pd.id = d.pid
+        <where>
+            d.pid = '0'
+            <if test="query.name != null and query.name != ''">
+                AND d.name like CONCAT('%',#{query.name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="query.startDate != null and query.endDate != null">
+                AND d.create_time BETWEEN #{query.startDate} and #{query.endDate}
+            </if>
+            and d.is_delete ='0'
+        </where>
+        ORDER BY
+        sort_code
+    </select>
+    <!--    查询部门 不分页-->
+    <select id="loadNotPage" resultType="me.zhengjie.entity.TComponentmanagement">
+        SELECT d.id, d.name, pd.name parentName, d.pid, d.sort_code, d.img_url, d.create_time, d.is_label, d.name label
+        FROM t_componentManagement d
+        LEFT JOIN t_componentManagement pd ON pd.id = d.pid
+        <where>
+            d.pid = '0'
+            <if test="query.name != null and query.name != ''">
+                AND d.name like CONCAT('%',#{query.name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="query.startDate != null and query.endDate != null">
+                AND d.create_time BETWEEN #{query.startDate} and #{query.endDate}
+            </if>
+            and d.is_delete ='0'
+        </where>
+        ORDER BY
+        sort_code
+    </select>
+    <!--  查询部件  -->
+    <select id="selectDeptTreeByParentId" resultType="me.zhengjie.entity.TComponentmanagement">
+        SELECT d.id,d.name,pd.name parentName,d.pid,d.sort_code,d.img_url,d.create_time, d.is_label, d.name label
+        FROM t_componentManagement d
+        LEFT JOIN t_componentManagement pd ON pd.id = d.pid
+        <where>
+            <if test="parentId != null and parentId != ''">
+                AND d.pid = #{parentId}
+            </if>
+            and d.is_delete ='0'
+        </where>
+        ORDER BY
+        sort_code
+    </select>
+    <select id="selectImgUrlById" resultType="me.zhengjie.entity.TComponentmanagement">
+        select * FROM  t_componentManagement
+        where id=#{id}
+    </select>
+</mapper>

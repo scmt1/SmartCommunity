@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqCommunityCadresMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqCommunityCadres">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="sex" property="sex"/>
+        <result column="birthday" property="birthday"/>
+        <result column="nation" property="nation"/>
+        <result column="id_card" property="idCard"/>
+        <result column="phone" property="phone"/>
+        <result column="fixed_telephone" property="fixedTelephone"/>
+        <result column="personal_profile" property="personalProfile"/>
+        <result column="head_portrait" property="headPortrait"/>
+        <result column="street_name" property="streetName"/>
+        <result column="community_name" property="communityName"/>
+        <result column="street_id" property="streetId"/>
+        <result column="community_id" property="communityId"/>
+        <result column="department" property="department"/>
+        <result column="post" property="post"/>
+        <result column="post_level" property="postLevel"/>
+        <result column="responsibilities" property="responsibilities"/>
+        <result column="position" property="position"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="create_id" property="createId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_id" property="updateId"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="delete_id" property="deleteId"/>
+        <result column="delete_time" property="deleteTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, type, sex, birthday, nation, id_card, phone, fixed_telephone, personal_profile, head_portrait, street, community, department,
+post, post_level, responsibilities, position, order_number, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.TZhsqCommunityCadres">
+         SELECT
+            t_zhsq_community_cadres.id,
+            t_zhsq_community_cadres.NAME,
+            t2.NAME AS type,
+            t_zhsq_community_cadres.sex,
+            t_zhsq_community_cadres.birthday,
+            t1.NAME AS nation,
+            t_zhsq_community_cadres.id_card,
+            t_zhsq_community_cadres.phone,
+            t_zhsq_community_cadres.fixed_telephone,
+            t_zhsq_community_cadres.personal_profile,
+            t_zhsq_community_cadres.head_portrait,
+            t_zhsq_community_cadres.street_id,
+            t_zhsq_community_cadres.community_id,
+            t_zhsq_community_cadres.community_name,
+            t_zhsq_community_cadres.street_name,
+            t3.NAME AS department,
+            t4.NAME AS post,
+            t5.NAME AS post_level,
+            t_zhsq_community_cadres.responsibilities,
+            t_zhsq_community_cadres.position,
+            t_zhsq_community_cadres.order_number,
+            t_zhsq_community_cadres.is_delete,
+            t_zhsq_community_cadres.create_id,
+            t_zhsq_community_cadres.create_time,
+            t_zhsq_community_cadres.update_id,
+            t_zhsq_community_cadres.update_time,
+            t_zhsq_community_cadres.delete_id,
+            t_zhsq_community_cadres.delete_time
+        FROM
+            t_zhsq_community_cadres
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData'
+            AND t1.number = t_zhsq_community_cadres.nation
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData'
+            AND t2.number = t_zhsq_community_cadres.type
+            LEFT JOIN grid_dept t3 ON t3.id = t_zhsq_community_cadres.department and t3.is_deleted = 0
+            LEFT JOIN grid_post t4 ON t4.id = t_zhsq_community_cadres.post
+            LEFT JOIN grid_dictionary t5 ON t5.field_name = 'levelData'
+            AND t5.number = t_zhsq_community_cadres.post_level
+             ${ew.customSqlSegment}
+    </select>
+
+</mapper>

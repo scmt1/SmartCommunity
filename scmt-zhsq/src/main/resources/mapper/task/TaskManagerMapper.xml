@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.task.TaskManagerMapper">
+    <select id="selectByQuery" resultType="java.util.Map" parameterType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        td.id,
+        td.`code`,
+        td.grid_id gridId,
+        tc.`name` taskType,
+        td.master_id masterId
+        ,siu.real_name submitUserName,
+        DATE_FORMAT(td.create_date,'%Y-%m-%d %H:%i') createDate
+        ,td.remark,IF(td.cycle_fixed=1,'周期','临时') cycleFixed,
+        (select real_name from `base_user` where id = td.execute_user_id ) execUserName,
+        td.status
+        FROM
+        task_details td
+        LEFT JOIN task_category tc ON tc.id = td.category_id
+        LEFT JOIN `base_user` siu on siu.id = td.submit_user_id
+        <where>
+            <if test="query.streetId != null and query.streetId != ''">
+                and find_in_set(td.grid_id, (
+                    select group_concat(id Separator ',') as id
+                    from basic_grids
+                    where street_id = #{query.streetId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.communityId != null and query.communityId != ''">
+                and find_in_set(td.grid_id, (
+                    select group_concat(id Separator ',') as id
+                    from basic_grids
+                    where community_id = #{query.communityId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                AND find_in_set(td.grid_id,#{query.gridId})
+            </if>
+            <if test="query.categoryId != null and query.categoryId != ''">
+                AND tc.id = #{query.categoryId}
+            </if>
+            <if test="query.cycleFixed != null and query.cycleFixed != ''">
+                AND td.cycle_fixed = #{query.cycleFixed}
+            </if>
+            <if test="query.executeUserId != null and query.executeUserId != '' and query.executeUserId !=1">
+                AND find_in_set(#{query.executeUserId}, td.execute_user_id)
+            </if>
+            <if test="query.submitUserId != null and query.submitUserId != '' and query.submitUserId !=1">
+                AND (td.submit_user_id = #{query.submitUserId}
+                or td.operate_user_id = #{query.submitUserId}
+                )
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND td.`status` = #{query.status}
+            </if>
+
+            <if test="query.createDateFrom != null and query.createDateFrom != ''">
+                AND DATE_FORMAT( td.create_date, '%Y-%m-%d' ) &gt;= #{query.createDateFrom}
+            </if>
+
+            <if test="query.createDateTo != null and query.createDateTo != ''">
+                AND DATE_FORMAT( td.create_date, '%Y-%m-%d' ) &lt;= #{query.createDateTo}
+            </if>
+            <if test="query.queryStr != null and query.queryStr != ''">
+                AND ( siu.real_name LIKE CONCAT('%',#{query.queryStr},'%')
+                or td.remark LIKE CONCAT('%',#{query.queryStr},'%')
+                )
+            </if>
+        </where>
+        order by td.create_date desc
+    </select>
+    <select id="loadByQuery" resultType="java.util.Map" parameterType="java.util.Map">
+        select * from
+        (
+
+        select md.create_date createDate,md.repair_remark remark,md.grid_id gridId,
+        '设备维护' as name,md.publisher userId,2 as icon,
+        md.status
+        from maintain_details md where md.type = 2
+        union
+        SELECT create_date createDate,repair_user_remark remark,grid_id gridId,
+        if(repair_type=1,'居家维修','公共报修') name,user_id userId,
+        2 as icon,
+        repair_order_status status
+        FROM repair_service
+        WHERE user_type = 2
+        union
+        select create_date createDate,content remark,grid_id gridId,
+        title name,internal_user_id userId, 3 as icon,0 as status
+        from community_announcement
+        ) t where gridId = #{gridId} and userId = #{submitUserId}
+        <if test="content != null and content != ''">
+            AND (remark LIKE CONCAT('%',#{content},'%')
+            or name LIKE CONCAT('%',#{content},'%')
+            )
+        </if>
+        ORDER BY createDate ${sort}
+    </select>
+    <select id="loadByAchievements" resultType="java.util.Map" parameterType="java.util.Map">
+
+        SELECT SUM(IFNULL(totalSore,0)) totalScore,userId,SUM(IFNULL(notSumbitCount,0))
+        notSumbitCount,SUM(IFNULL(completionCount,0)) completionCount
+        FROM
+        (
+        (SELECT a.total totalSore,a.real_name,a.count1-b.count2 notSumbitCount,b.count2
+        completionCount,a.execute_user_id userId
+        FROM
+        (
+        SELECT COUNT(*) count1,
+        SUM(IFNULL(t.total_score,0)) total
+        ,u.real_name,t.execute_user_id
+        FROM task_details t
+        LEFT JOIN internal_user u ON u.id = t.execute_user_id
+        LEFT JOIN task_manager tm ON tm.id = t.master_id
+        LEFT JOIN task_category tc ON tc.id = tm.category_id
+        <where>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(t.create_date,'%Y-%m') =DATE_FORMAT(#{createDate},'%Y-%m')
+            </if>
+            <if test="gridId != null ">
+                AND tm.grid_id = #{gridId}
+            </if>
+        </where>
+        GROUP BY t.execute_user_id
+        ) a JOIN
+        (
+        SELECT COUNT(*) count2,td.execute_user_id
+        FROM task_details td
+        left join task_manager tm on td.master_id = tm.id
+        WHERE td.`status` = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(td.create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null ">
+            AND tm.grid_id = #{gridId}
+        </if>
+        GROUP By td.execute_user_id
+        ) b ON a.execute_user_id = b.execute_user_id)
+
+        UNION
+
+        (SELECT a.total totalSore,a.real_name,a.count1-b.count2 notSumbitCount,b.count2 completionCount,a.repair_user_id
+        userId
+        FROM
+        (SELECT COUNT(*) count1,SUM(IFNULL(rs.total_score,0)) total,u.real_name,rs.repair_user_id
+        FROM repair_service rs
+        LEFT JOIN internal_user u ON rs.repair_user_id = u.id
+        <where>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(rs.create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+            </if>
+            <if test="gridId != null ">
+                AND rs.grid_id = #{gridId}
+            </if>
+        </where>
+        GROUP BY rs.repair_user_id) a JOIN
+        (
+        SELECT COUNT(*) count2,repair_user_id
+        FROM repair_service WHERE repair_order_status = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null ">
+            AND grid_id = #{gridId}
+        </if>
+        GROUP By repair_user_id
+        ) b ON a.repair_user_id = b.repair_user_id)
+
+        UNION
+
+        (SELECT a.total totalSore,a.real_name,a.count1-b.count2 notSumbitCount,b.count2
+        completionCount,a.internal_user_id userId
+        FROM
+        (SELECT COUNT(*) count1,SUM(IFNULL(md.total_score,0)) total,u.real_name,md.internal_user_id
+        FROM maintain_details md
+        LEFT JOIN internal_user u ON md.internal_user_id = u.id
+        <where>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(md.create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+            </if>
+            <if test="gridId != null ">
+                AND md.grid_id = #{gridId}
+            </if>
+        </where>
+        GROUP BY md.internal_user_id) a JOIN
+        (
+        SELECT COUNT(*) count2,md.internal_user_id
+        FROM maintain_details md
+        LEFT JOIN internal_user u ON md.internal_user_id = u.id
+        WHERE `status` = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null ">
+            AND md.grid_id = #{gridId}
+        </if>
+        GROUP By internal_user_id
+        ) b ON a.internal_user_id = b.internal_user_id)
+        ) c left join internal_user iu on c.userId = iu.id
+        GROUP BY c.userId
+        ORDER BY ${sortName} ${sort}
+    </select>
+    <select id="loadViewingTotal" resultType="java.util.Map" parameterType="com.alibaba.fastjson.JSONObject">
+        SELECT SUM(total) total,SUM(timely) timely,SUM(isReject) isReject
+        FROM
+        (SELECT COUNT(*) total,sum(td.system_score_ids is not null) timely,
+        sum(td.overrule_remark is not null) isReject
+        FROM task_details td left join task_manager tm on td.master_id = tm.id
+        where tm.status = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(td.create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null and gridId != ''">
+            AND tm.grid_id = #{gridId}
+        </if>
+
+        UNION
+        SELECT COUNT(*) total,sum( system_score_ids is not null) timely,
+        sum(overrule_remark is not null) isReject
+        FROM repair_service
+        where repair_order_status = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null and gridId != ''">
+            AND grid_id = #{gridId}
+        </if>
+
+        UNION
+        SELECT COUNT(*) total,sum( system_score_ids is not null) timely,
+        sum(overrule_remark is not null) isReject
+        FROM maintain_details where status = 7
+
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null and gridId != ''">
+            AND grid_id = #{gridId}
+        </if>
+
+        ) a
+
+    </select>
+    <select id="loadViewingTotalByUser" resultType="java.util.Map" parameterType="com.alibaba.fastjson.JSONObject">
+        SELECT SUM(totalScore) totalScore,userId,SUM(timely) timely,SUM(isReject) isReject,SUM(totalCount)
+        totalCount,SUM(completeCount) completeCount
+        FROM
+        (SELECT SUM(IFNULL(t.total_score,0)) totalScore
+        ,u.real_name,t.execute_user_id userId,SUM(t.system_score_ids is not null) timely,SUM(t.overrule_remark is not
+        null) isReject,count(1) totalCount,
+        SUM(IF(t.`status`=7,1,0)) completeCount
+        FROM (SELECT * FROM task_details where status >2
+
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null and gridId != ''">
+            AND grid_id = #{gridId}
+        </if>
+
+        ) t
+        LEFT JOIN internal_user u ON u.id = t.execute_user_id
+        GROUP BY t.execute_user_id
+        UNION
+        SELECT SUM(IFNULL(rs.total_score,0)) totalScore
+        ,u.real_name,rs.repair_user_id userId,SUM(rs.system_score_ids is not null) timely,SUM(rs.overrule_remark is not
+        null) isReject,count(1) totalCount,
+        SUM(IF(rs.repair_order_status=7,1,0)) completeCount
+        FROM (SELECT * FROM repair_service where repair_order_status >2
+
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null and gridId != ''">
+            AND grid_id = #{gridId}
+        </if>
+        ) rs
+        LEFT JOIN internal_user u ON u.id =rs.repair_user_id
+        GROUP BY rs.repair_user_id
+        UNION
+        SELECT SUM(IFNULL(md.total_score,0)) totalScore
+        ,u.real_name,md.internal_user_id userId,SUM(md.system_score_ids is not null) timely,SUM(md.overrule_remark is
+        not null) isReject,count(1) totalCount,
+        SUM(IF(md.`status`=7,1,0)) completeCount
+        FROM (SELECT * FROM maintain_details where status >2
+
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+        </if>
+        <if test="gridId != null and gridId != ''">
+            AND grid_id = #{gridId}
+        </if>
+        ) md
+        LEFT JOIN internal_user u ON u.id = md.internal_user_id
+        GROUP BY md.internal_user_id
+        ) c
+        GROUP BY userId having userId = #{userId}
+
+
+    </select>
+    <select id="loadTaskByUser" resultType="java.util.Map" parameterType="com.alibaba.fastjson.JSONObject">
+        SELECT tm.`code`,t.create_date,tc.`name`,tm.remark,IFNULL(t.total_score,0)
+        totalScore,tm.photos,t.evaluation_star_level evaluationStarLevel,
+        DATE_FORMAT(t.create_date,'%m-%d %H:%i') date,tm.category_id categoryId,tm.urgent_type urgentType
+        FROM (SELECT * FROM task_details
+        <where>
+            <if test="userId != null and userId != ''">
+                AND execute_user_id = #{userId}
+                and status = 7
+            </if>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+            </if>
+        </where>
+        ) t
+
+        LEFT JOIN task_manager tm on t.master_id = tm.id
+        LEFT JOIN task_category tc ON tc.id = tm.category_id
+        UNION
+
+        SELECT rs.`code`,rs.create_date,IF(rs.repair_type = 2,'公共报修',(SELECT
+        CONCAT(SUBSTR(b.unit_code,1,2),'-',SUBSTR(b.unit_code,3,4),'-',hc.housing_num)
+        FROM house_certification hc
+        LEFT JOIN building b ON hc.building_id = b.id WHERE hc.id = house_id)) name,
+        rs.user_remark remark,IFNULL(rs.total_score,0) totalScore,rs.user_photos photos,rs.evaluation_star_level
+        evaluationStarLevel,DATE_FORMAT(rs.create_date,'%m-%d %H:%i') date,
+        IF(rs.repair_type = 2,(select id from task_category where code='JCSJ-BXFW-GGWX' and grid_id=
+        rs.grid_id),
+        (select id from task_category where code='JCSJ-BXFW-JJWX' and grid_id= rs.grid_id)) categoryId
+        ,rs.urgent_type urgentType
+        FROM repair_service rs
+        <where>
+            <if test="userId != null and userId != ''">
+                AND repair_user_id = #{userId} and repair_order_status = 7
+            </if>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+            </if>
+        </where>
+
+        UNION
+
+        SELECT em.`code`,md.create_date,dc.`name`,em.remark,IFNULL(md.total_score,0)
+        totalScore,md.photos,md.evaluation_star_level evaluationStarLevel,DATE_FORMAT(md.create_date,'%m-%d %H:%i')
+        date,
+        (select id from task_category where code='JCSJ-SBWH' and grid_id = md.grid_id) categoryId,md.urgent_type
+        urgentType
+        FROM (SELECT * FROM maintain_details
+        <where>
+            <if test="userId != null and userId != ''">
+                AND internal_user_id = #{userId} and status = 7
+            </if>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(create_date,'%Y-%m') = DATE_FORMAT(#{createDate},'%Y-%m')
+            </if>
+        </where>
+        ) md
+        LEFT JOIN equipment_maintenance em ON em.id = md.equipment_maintenance_id
+        LEFT JOIN device_category dc ON em.category_id = dc.id
+
+    </select>
+    <select id="selectOneById" resultType="java.util.Map">
+           select tm.id,tm.category_id categoryId,
+       concat(siu.real_name)  sbmtUserName,d1.name urgentType,
+       siu.phone smbtPhone,tm.status,
+       tm.create_date smbtDate,tm.cycle_fixed cycleFixed,
+       tc.name categoryName,tm.remark,tm.photos
+    from (select * from task_manager where id =  #{taskManagerId}) tm
+      left join base_user siu on siu.id = tm.submit_user_id
+
+          left join task_category tc on tc.id = tm.category_id
+          LEFT JOIN (SELECT number, name, remark FROM grid_dictionary WHERE field_name = 'urgentType') d1
+          ON d1.number = tm.urgent_type
+
+
+    </select>
+    <select id="loadCycleInfo" resultType="java.util.Map">
+        select tm.id,
+               tm.category_id                        categoryId,
+               DATE_FORMAT(tm.begin_date,'%Y-%m-%d') beginDate,
+               tm.cycle_num                          cycleNum,
+               tm.cycle_type                         cycleType,
+               tm.grid_id                        gridId,
+               concat(tm.cycle_num, case
+                    when tm.cycle_type = 1 then '天'
+                    when tm.cycle_type = 2 then '周'
+                    when tm.cycle_type = 3 then '月'
+                    when tm.cycle_type = 4 then '年'
+                    else '' end) cycle
+        from task_manager tm
+        where tm.cycle_fixed = 1 and  tm.id = #{taskManagerId}
+    </select>
+    <select id="loadTaskForApp" resultType="java.util.Map" parameterType="int">
+       SELECT
+        tm.id,
+        tm.`code`,
+        tc.`name` taskType,
+        siu.real_name submitUserName,
+        tm.create_date createDate,
+        tm.remark,IF(tm.cycle_fixed=1,'周期','临时') cycleFixed,
+        siu.real_name execUserName,
+        IF(tm.`status`=1,'未完成','已完成') status
+        FROM
+        task_manager tm
+        LEFT JOIN task_category tc ON tc.id = tm.category_id
+        LEFT JOIN internal_user siu on siu.id = tm.submit_user_id
+        where tm.grid_id = #{query.gridId}
+        and tm.cycle_fixed != 1
+    </select>
+    <select id="loadCount" resultType="java.lang.Integer" parameterType="int">
+        select count(1) from
+        (
+            SELECT tm.create_date createDate,tm.remark,tm.grid_id gridId,
+            tc.`name`,tm.submit_user_id userId,1 as icon,
+            case when td.status in (2,3) then 1
+            when td.status = 4 then 2
+            when td.status in (6,7) then 3
+            when td.status = 5 then 4
+            when tm.status = 3 then 5
+            else 0 end status
+            FROM task_manager tm
+            LEFT JOIN task_category tc on tm.category_id = tc.id
+            LEFT JOIN task_details td on tm.code = td.master_id
+            UNION
+            select md.create_date createDate,md.repair_remark remark,md.grid_id gridId,
+            '设备维护' as name,md.publisher userId,2 as icon,
+             md.status
+            from maintain_details md where md.type = 2
+            union
+            SELECT create_date createDate,repair_user_remark remark,grid_id gridId,
+            if(repair_type=1,'居家维修','公共报修') name,user_id userId,
+            2 as icon,
+             repair_order_status status
+            FROM repair_service
+            WHERE user_type = 2
+            union
+            select create_date createDate,content remark,grid_id gridId,
+            title name,internal_user_id userId, 3 as icon,0 as status
+            from community_announcement
+        ) t where  userId = #{id}
+    </select>
+    <select id="loadDateForApp" resultType="me.zhengjie.dto.TaskDetailsDto"
+            parameterType="int">
+        SELECT tc.`name` taskDetailsName,tm.remark, (SELECT name FROM dictionary WHERE field_name = 'urgentType' and number = tm.urgent_type) urgentTypeName,
+	      tm.`code`,(SELECT  CONCAT(j.`name`,'|',iu.real_name,' ',iu.phone) FROM (SELECT real_name,phone,job_id,id FROM internal_user ) iu
+	      LEFT JOIN job j on iu.job_id = j.id WHERE iu.id = tm.submit_user_id) publisher,tm.photos
+	      ,td.complete_photos completePhotos,td.remark completeRemark,td.complete_date completeDate,tc.department_ids departmentIds,tm.create_date
+          FROM (select * from  task_manager where id = #{id}) tm
+          LEFT JOIN task_details td ON td.master_id = tm.id
+          LEFT JOIN task_category tc on tm.category_id = tc.id
+
+    </select>
+    <select id="loadByDeparentAchievements" resultType="java.util.Map" parameterType="com.alibaba.fastjson.JSONObject">
+        SELECT SUM(IFNULL(totalSore,0)) totalScore,userId,SUM(IFNULL(notSumbitCount,0))
+        notSumbitCount,SUM(IFNULL(completionCount,0)) completionCount
+        FROM
+        (
+        (SELECT a.total totalSore,a.real_name,a.count1-b.count2 notSumbitCount,b.count2
+        completionCount,a.execute_user_id userId
+        FROM
+        (
+        SELECT COUNT(*) count1,
+        SUM(IFNULL(t.total_score,0)) total
+        ,u.real_name,t.execute_user_id
+        FROM (select * from task_details where status = 7) t
+        LEFT JOIN internal_user u ON u.id = t.execute_user_id
+        LEFT JOIN task_manager tm ON tm.id = t.master_id
+        LEFT JOIN task_category tc ON tc.id = tm.category_id
+        <where>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(t.create_date,'%Y-%m') = #{createDate}
+            </if>
+            <if test="gridId != null ">
+                AND tm.grid_id = #{gridId}
+            </if>
+        </where>
+        GROUP BY t.execute_user_id
+        ) a JOIN
+        (
+        SELECT COUNT(*) count2,td.execute_user_id
+        FROM task_details td
+        left join task_manager tm on td.master_id = tm.id
+        WHERE td.`status` = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(td.create_date,'%Y-%m') = #{createDate}
+        </if>
+        <if test="gridId != null ">
+            AND tm.grid_id = #{gridId}
+        </if>
+        GROUP By td.execute_user_id
+        ) b ON a.execute_user_id = b.execute_user_id)
+
+        UNION
+
+        (SELECT a.total totalSore,a.real_name,a.count1-b.count2 notSumbitCount,b.count2 completionCount,a.repair_user_id
+        userId
+        FROM
+        (SELECT COUNT(*) count1,SUM(IFNULL(rs.total_score,0)) total,u.real_name,rs.repair_user_id
+        FROM repair_service rs
+        LEFT JOIN internal_user u ON rs.repair_user_id = u.id
+
+        <where>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(rs.create_date,'%Y-%m') = #{createDate}
+            </if>
+            <if test="gridId != null ">
+                AND rs.grid_id = #{gridId}
+            </if>
+        </where>
+        GROUP BY rs.repair_user_id) a JOIN
+        (
+        SELECT COUNT(*) count2,repair_user_id
+        FROM repair_service WHERE repair_order_status = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = #{createDate}
+        </if>
+        <if test="gridId != null ">
+            AND grid_id = #{gridId}
+        </if>
+        GROUP By repair_user_id
+        ) b ON a.repair_user_id = b.repair_user_id)
+
+        UNION
+
+        (SELECT a.total totalSore,a.real_name,a.count1-b.count2 notSumbitCount,b.count2
+        completionCount,a.internal_user_id userId
+        FROM
+        (SELECT COUNT(*) count1,SUM(IFNULL(md.total_score,0)) total,u.real_name,md.internal_user_id
+        FROM maintain_details md
+        LEFT JOIN internal_user u ON md.internal_user_id = u.id
+        <where>
+            <if test="createDate != null and createDate != ''">
+                AND DATE_FORMAT(md.create_date,'%Y-%m') = #{createDate}
+            </if>
+            <if test="gridId != null ">
+                AND md.grid_id = #{gridId}
+            </if>
+        </where>
+        GROUP BY md.internal_user_id) a JOIN
+        (
+        SELECT COUNT(*) count2,md.internal_user_id
+        FROM maintain_details md
+        LEFT JOIN internal_user u ON md.internal_user_id = u.id
+        WHERE `status` = 7
+        <if test="createDate != null and createDate != ''">
+            AND DATE_FORMAT(create_date,'%Y-%m') = #{createDate}
+        </if>
+        <if test="gridId != null ">
+            AND md.grid_id = #{gridId}
+        </if>
+        GROUP By internal_user_id
+        ) b ON a.internal_user_id = b.internal_user_id)
+        ) c left join internal_user iu on c.userId = iu.id
+        left join job j on iu.job_id = j.id
+
+        <if test="departmentId != 0 ">
+            and iu.department_id = #{departmentId}
+        </if>
+        GROUP BY c.userId
+        ORDER BY ${sortName} ${sort}
+    </select>
+    <select id="loadAllPeriodicTask" resultType="java.util.Map">
+        SELECT DATE_FORMAT(tm.next_exec_date,'%Y-%m-%d %H:%i') nextExecDate
+        ,tm.cycle_fixed cycleFixed,tm.cycle_num cycleNum,tm.cycle_type cycleType
+        ,DATE_FORMAT(tm.create_date,'%Y-%m-%d %H:%i') createDate
+        ,tm.remark ,tm.photos,tm.category_id categoryId
+        ,tc.`name` categoryName,tm.status,tm.grid_id gridId
+        ,tm.code,tm.submit_user_id submitUserId,tm.id
+        FROM task_manager tm
+        LEFT JOIN task_category tc ON tm.category_id = tc.id
+        where tm.cycle_fixed =1 and tm.status in (0,1)
+        <if test="query.submitUserId !=null and query.submitUserId !=''">
+            and tm.submit_user_id = #{query.submitUserId}
+        </if>
+        <if test="query.streetId != null and query.streetId != ''">
+            and find_in_set(tm.grid_id, (
+                select group_concat(id Separator ',') as id
+                from basic_grids
+                where street_id = #{query.streetId} and is_delete = 0)
+            )
+        </if>
+        <if test="query.communityId != null and query.communityId != ''">
+            and find_in_set(tm.grid_id, (
+                select group_concat(id Separator ',') as id
+                from basic_grids
+                where community_id = #{query.communityId} and is_delete = 0)
+            )
+        </if>
+        <if test="query.gridId !=null and query.gridId !=''">
+            and   find_in_set(tm.grid_id, #{query.gridId})
+        </if>
+        <if test="query.categoryId !=null and query.categoryId !=''">
+            and tm.category_id = #{query.categoryId}
+        </if>
+        <if test="query.createDateFrom != null and query.createDateFrom != ''">
+            AND DATE_FORMAT( tm.create_date, '%Y-%m-%d' ) &gt;= #{query.createDateFrom}
+        </if>
+
+        <if test="query.createDateTo != null and query.createDateTo != ''">
+            AND DATE_FORMAT( tm.create_date, '%Y-%m-%d' ) &lt;= #{query.createDateTo}
+        </if>
+        <if test="query.status !=null and query.status !=''">
+            and tm.status = #{query.status}
+        </if>
+        <if test="query.queryStr != null and query.queryStr != ''">
+            AND  (
+            tm.remark LIKE CONCAT('%',#{query.queryStr},'%')
+            or  tm.code LIKE CONCAT('%',#{query.queryStr},'%')
+            )
+        </if>
+
+    </select>
+    <select id="getTaskManager"  resultType="me.zhengjie.entity.task.TaskManager">
+        select *,tc.`name` categoryName
+        from  task_manager tm
+         left join task_category tc ON tm.category_id = tc.id
+         where  tm.id = #{taskManagerId}
+    </select>
+
+</mapper>

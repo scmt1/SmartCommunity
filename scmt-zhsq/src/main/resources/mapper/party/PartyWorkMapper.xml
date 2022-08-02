@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyWorkMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.party.PartyWork">
+		<result column="id" property="id" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="is_deleted" property="isDeleted" />
+		<result column="title" property="title" />
+		<result column="party_committee_id" property="partyCommitteeId" />
+		<result column="part_branch_id" property="partBranchId" />
+		<result column="party_member_category"
+			property="partyMemberCategory" />
+		<result column="content" property="content" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id,
+		create_user,
+		create_time,
+		update_user,
+		update_time,
+		status,
+		is_deleted,
+		title, party_committee_id, part_branch_id, party_member_category, content
+	</sql>
+	<select id="getPartyWorkList"
+		resultType="me.zhengjie.dto.PartyWorkListDto">
+		SELECT
+			id,
+			title,
+			create_time AS createTime
+		FROM
+			party_work WHERE is_deleted=0 AND party_committee_id=#{partyCommitteeId}
+			AND party_category_id=#{partyCategoryId}
+			AND ( part_branch_id=#{branchId} or part_branch_id=0)
+		ORDER BY
+			createTime DESC
+	</select>
+
+	<select id="getPartyList"
+			resultType="me.zhengjie.entity.party.PartyWork">
+		SELECT
+			*
+		FROM
+			party_work WHERE is_deleted=0
+		ORDER BY
+			create_time DESC
+	</select>
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicGridsMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicGrids">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="street_id" property="streetId" />
+        <result column="street_name" property="streetName" />
+        <result column="community_id" property="communityId" />
+        <result column="community_name" property="communityName" />
+        <result column="grid_person_id" property="gridPersonId" />
+        <result column="grid_person_name" property="gridPersonName" />
+        <result column="organization" property="organization" />
+        <result column="position" property="position" />
+        <result column="order_number" property="orderNumber" />
+        <result column="remark" property="remark" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="code" property="code" />
+        <result column="address" property="address" />
+        <result column="area" property="area" />
+        <result column="information" property="information" />
+        <result column="type" property="type" />
+        <result column="user_name" property="userName" />
+        <result column="password" property="password" />
+        <result column="recognition_face_id" property="recognitionFaceId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_name,password,recognition_face_id,name, street_id, street_name, community_id, community_name, grid_person_id, grid_person_name, organization, position, order_number, remark, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time, code, address, area, information, type
+    </sql>
+
+    <select id="queryMyManagedGridsList" resultType="me.zhengjie.entity.BasicGrids">
+        select * from basic_grids where is_delete = 0 and id in (select grids_id from rela_grids_person_grids where grids_person_id = #{personId}) order by create_time asc
+    </select>
+
+    <select id="queryGridsOwnInformation" resultType="map">
+        SELECT
+            t_zhsq_grid_member.id AS gridsPersonId
+            ,t_zhsq_grid_member.name AS gridsPersonName
+            ,t_zhsq_grid_member.head_portrait AS gridsPersonHeadPortrait
+            ,(SELECT COUNT(1) FROM t_building_archives WHERE grid = basic_grids.Id AND is_delete = 0) AS archivesCount
+            ,(SELECT COUNT(1) FROM basic_housing WHERE owned_grid_id = basic_grids.Id AND is_delete = 0) AS housingCount
+            ,(SELECT COUNT(1) FROM (SELECT COUNT(1) FROM basic_person where person_type = '1' AND owned_grid_id = #{gridsId} AND acc_number IS NOT NULL AND acc_number != '' AND is_delete = 0 and acc_relation ='1' group by acc_number) AS A) AS domicileCount
+            ,(SELECT COUNT(1) FROM basic_person WHERE owned_grid_id = basic_grids.Id AND is_delete = 0) AS personCount
+            ,(SELECT COUNT(1) FROM t_zhsq_merchant_profile WHERE grid_id = basic_grids.Id AND is_delete = 0) AS merchantCount
+            ,(SELECT COUNT(1) FROM basic_social_organization WHERE grids_id = basic_grids.Id AND is_delete = 0) AS organizationCount
+            ,(SELECT COUNT(1) FROM basic_housing_estate WHERE grid_id = basic_grids.Id AND is_delete = 0) AS housingEstateCount
+            ,(SELECT COUNT(1) FROM (SELECT COUNT(1) FROM basic_housing_estate WHERE grid_id = #{gridsId} AND is_delete = 0 group by property_name_id) AS B ) AS propertyCount
+            ,(SELECT COUNT(1) FROM t_zhsq_volunteer WHERE owned_grid = basic_grids.Id AND is_delete = 0) AS volunteerCount
+        FROM basic_grids basic_grids
+        LEFT OUTER JOIN t_zhsq_grid_member t_zhsq_grid_member ON basic_grids.grid_person_id = t_zhsq_grid_member.id
+        WHERE basic_grids.Id = #{gridsId}
+    </select>
+
+    <select id="queryGridmanList" resultType="map">
+        SELECT t_zhsq_grid_member.id,t_zhsq_grid_member.name,t_zhsq_grid_member.head_portrait FROM t_zhsq_grid_member WHERE post LIKE'%网格员%' AND is_delete = 0
+        AND id IN (SELECT grids_person_id  FROM rela_grids_person_grids WHERE grids_id = #{gridsId})
+    </select>
+
+    <!--    通过wapper 联表查询-->
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.BasicGrids">
+        SELECT
+           id, name, street_id, street_name, community_id, community_name, grid_person_id, grid_person_name, organization, position, order_number, remark, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time, code, address, area, information, type
+        FROM
+            basic_grids
+        ${ew.customSqlSegment}
+    </select>
+    <select id="queryAllGridsTree" resultType="map">
+        SELECT
+            *
+        FROM
+            (
+            SELECT
+                id,
+                NAME AS title,
+                parent_id AS pid,
+                create_time,
+                '1' AS lel
+            FROM
+                grid_dept
+            WHERE
+                attribute IN ( 0, 1, 2 )
+                AND grid_dept.is_deleted = 0 UNION ALL
+            SELECT
+                id,
+                NAME AS title,
+                ifnull( community_id, 0 ) AS pid,
+                create_time,
+                '2' AS lel
+            FROM
+                basic_grids
+            WHERE
+                basic_grids.is_delete = 0
+            ) aa
+        ORDER BY
+            aa.create_time
+    </select>
+    <select id="getGridById" resultType="me.zhengjie.entity.BasicGrids">
+         SELECT * FROM basic_grids where id = #{query.id}
+    </select>
+</mapper>

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.task.TaskDetailsMapper">
+
+    <select id="selectListByMaster" resultType="com.alibaba.fastjson.JSONObject">
+        select td.status,
+               iu.real_name        userName,
+               iu.phone,
+               d.name              deptName,
+               td.system_score_ids systemScoreIds,
+               td.task_score_ids   taskScoreIds,
+               td.receive_date     receiveDate,
+               td.complete_date    completeDate
+        from (select status, execute_user_id, system_score_ids, task_score_ids,receive_date,complete_date from task_details where master_id = #{taskManagerId}) td
+                 left join `user` iu on iu.id = td.execute_user_id
+                 left join department d on d.id = iu.department_id
+    </select>
+    <select id="loadOneDetails" resultType="java.util.Map">
+        select
+               td.id,
+               td.status,
+               iu.real_name        userName,
+               iu.phone,
+               d.name              deptName,
+               td.remark,
+               td.receive_date receiveDate,
+               td.complete_date completeDate,
+               td.complete_photos completePhotos
+        from (select * from task_details where master_id = #{taskManagerId}) td
+                 left join `user` iu on iu.id = td.execute_user_id
+                 left join department d on d.id = iu.department_id
+        order by td.receive_date desc limit 1
+    </select>
+    <select id="loadForApp" resultType="java.util.Map" parameterType="int">
+       SELECT tc.`name`,tm.remark,tm.urgent_type,td.overrule_remark
+          FROM (select  * from  task_details where  id =#{id}) td
+          LEFT JOIN task_manager tm ON td.master_id = tm.id
+          LEFT JOIN task_category tc on tm.category_id = tc.id
+    </select>
+    <select id="loadDateForApp" resultType="me.zhengjie.dto.TaskDetailsDto"
+            parameterType="int">
+    SELECT
+	tc.`name` taskDetailsName,
+	td.remark,
+	(
+		SELECT
+			NAME
+		FROM
+			grid_dictionary
+		WHERE
+			field_name = 'urgentType'
+		AND number = td.urgent_type
+	) urgentTypeName,
+	td.`code`,
+	(
+		SELECT
+			CONCAT(real_name, ' ', phone)
+		FROM
+					`base_user` WHERE id = td.submit_user_id
+			) publisher,
+
+	td.repair_photos photos,
+	td.complete_photos completePhotos,
+	td.remark completeRemark,
+	td.complete_date completeDate,
+
+	tc.id categoryId,
+	td. STATUS,
+	td.complete_photos completePhotos,
+	td.remark completeRemark,
+	td.complete_date completeDate,
+
+	tc.id categoryId,
+	td. STATUS,
+	td.evaluation_remark evaluationRemark,
+	td.create_date,
+	td.overrule_Remark overruleRemark
+FROM
+	(
+		SELECT
+			*
+		FROM
+			task_details
+		WHERE
+			id = #{id}
+	) td
+LEFT JOIN task_category tc ON td.category_id = tc.id
+    </select>
+    <select id="selectByQuery" resultType="java.util.Map">
+        select id,status,DATE_FORMAT(create_date,'%Y-%m-%d %H:%i') createDate,code
+        from task_details
+        <where>
+            <if test="query.gridId != null and query.gridId != ''">
+                AND find_in_set(grid_id,#{query.gridId})
+            </if>
+            <if test="query.masterId != null and query.masterId != ''">
+                AND master_id = #{query.masterId}
+            </if>
+
+            <if test="query.status != null and query.status != ''">
+                AND find_in_set( status,#{query.status})
+            </if>
+            <if test="query.createDateFrom != null and query.createDateFrom != ''">
+                AND DATE_FORMAT( create_date, '%Y-%m-%d' ) &gt;= #{query.createDateFrom}
+            </if>
+
+            <if test="query.createDateTo != null and query.createDateTo != ''">
+                AND DATE_FORMAT( create_date, '%Y-%m-%d' ) &lt;= #{query.createDateTo}
+            </if>
+            <if test="query.queryStr != null and query.queryStr != ''">
+                AND ( siu.real_name LIKE CONCAT('%',#{query.queryStr},'%')
+                or td.remark LIKE CONCAT('%',#{query.queryStr},'%')
+                )
+            </if>
+        </where>
+        order by create_date desc
+    </select>
+    <select id="loadAllForApp" resultType="java.util.Map">
+        SELECT * FROM (
+        SELECT CONCAT('单号','：',td.code) title,DATE_FORMAT( td.create_date, '%m-%d %H:%i' ) createDate,td.create_date
+        sDate,
+        'RWLB' AS cood,
+        td.id id,
+        td.status status,
+        td.repair_photos photo,td.remark sRemark,tc.`name` sType,td.execute_user_id userIds
+        FROM task_details td
+        LEFT JOIN task_category tc ON td.category_id = tc.id
+      <where>
+          <if test="query.gridId != null and query.gridId != ''">
+              AND find_in_set( td.grid_id,#{query.gridId})
+          </if>
+          <if test="query.urgentType != null and query.urgentType != ''">
+              AND find_in_set( td.urgent_type,#{query.urgentType})
+          </if>
+      </where>
+
+        ) a
+
+        <where>
+            <if test="query.statusList != null and query.statusList.size > 0">
+                and a.status in
+                <foreach item="status" index="index" collection="query.statusList" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="query.characterType != 1 ">
+                <if test="query.userId != null and query.userId != '' ">
+                    AND find_in_set(#{query.userId},userIds)
+                </if>
+            </if>
+
+            <if test="query.cood != null and query.cood !='' ">
+                and a.cood = #{query.cood}
+            </if>
+            <if test="query.notCood != null and query.notCood !='' ">
+                and a.cood not in #{query.notCood}
+            </if>
+            <if test="query.createDateFrom != null and query.createDateFrom != ''">
+                AND DATE_FORMAT(sDate,'%Y-%m-%d') &gt;= DATE_FORMAT( #{query.createDateFrom}, '%Y-%m-%d' )
+            </if>
+            <if test="query.createDateTo != null and query.createDateTo != ''">
+                AND DATE_FORMAT(sDate,'%Y-%m-%d') &lt;=DATE_FORMAT( #{query.createDateTo}, '%Y-%m-%d' )
+            </if>
+            <if test="query.lookAll != null and query.lookAll != ''">
+                AND ( sRemark LIKE CONCAT('%',#{query.lookAll},'%')
+                or sType LIKE CONCAT('%',#{query.lookAll},'%')
+                or title LIKE CONCAT('%',#{query.lookAll},'%'))
+            </if>
+        </where>
+        order by sDate ${query.sort}
+    </select>
+    <select id="loadCountForApp" resultType="java.lang.Integer">
+        SELECT count(1) FROM
+        (
+
+
+        SELECT CONCAT('单号','：',td.code) title,DATE_FORMAT( td.create_date, '%m-%d %H:%i' ) createDate,td.create_date
+        sDate,
+        'RWLB' AS cood,
+        td.id id,
+        td.status status,
+        td.repair_photos photo,td.remark sRemark,tc.`name` sType,td.execute_user_id userIds
+        FROM task_details td
+        LEFT JOIN task_category tc ON td.category_id = tc.id
+        where td.grid_id = #{query.gridId}
+        ) a
+
+        <where>
+            <if test="query.statusList != null and query.statusList.size > 0">
+                and a.status in
+                <foreach item="status" index="index" collection="query.statusList" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+
+            <if test="query.characterType != 1 ">
+                <if test="query.userId != null and query.userId != '' ">
+                    AND find_in_set(#{query.userId},userIds)
+                </if>
+            </if>
+
+            <if test="query.cood != null and query.cood !='' ">
+                and a.cood = #{query.cood}
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                AND find_in_set( td.grid_id,#{query.gridId})
+            </if>
+            <if test="query.notCood != null and query.notCood !='' ">
+                and a.cood not in #{query.notCood}
+            </if>
+            <if test="query.createDateFrom != null and query.createDateFrom != ''">
+                AND DATE_FORMAT(sDate,'%Y-%m-%d') &gt;= DATE_FORMAT( #{query.createDateFrom}, '%Y-%m-%d' )
+            </if>
+            <if test="query.createDateTo != null and query.createDateTo != ''">
+                AND DATE_FORMAT(sDate,'%Y-%m-%d') &lt;=DATE_FORMAT( #{query.createDateTo}, '%Y-%m-%d' )
+            </if>
+            <if test="query.lookAll != null and query.lookAll != ''">
+                AND ( sRemark LIKE CONCAT('%',#{query.lookAll},'%')
+                or sType LIKE CONCAT('%',#{query.lookAll},'%')
+                or title LIKE CONCAT('%',#{query.lookAll},'%'))
+            </if>
+        </where>
+        order by sDate ${query.sort}
+    </select>
+    <select id="taskStatistics" resultType="java.util.Map">
+                    SELECT COUNT(1) totalCount
+            ,SUM(if(td.`status`=1,1,0)) distribute
+            ,SUM(if(td.`status`=2,1,0)) beReceived
+            ,SUM(if(td.`status`=3,1,0)) doing
+            ,SUM(if(td.`status`=5,1,0)) toReject
+            ,SUM(if(td.`status`=4,1,0)) beVerified
+            ,SUM(if(td.`status`>5,1,0)) isComplete
+            ,SUM(if(td.`status`=8,1,0)) invalid
+            ,tc.`name`
+            FROM (select * from task_details
+            <where>
+                <if test="query.streetId != null and query.streetId != ''">
+                    and find_in_set(grid_id, (
+                        select
+                            group_concat(id Separator ',') id
+                        from
+                            basic_grids
+                        where
+                            street_id = #{query.streetId}
+                            and is_delete = 0)
+                    )
+                </if>
+                <if test="query.communityId != null and query.communityId != ''">
+                    and find_in_set(grid_id, (
+                        select
+                            group_concat(id Separator ',') id
+                        from
+                            basic_grids
+                        where
+                            community_id = #{query.communityId}
+                            and is_delete = 0)
+                    )
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    AND find_in_set(grid_id,#{query.gridId})
+                </if>
+            </where>
+            ) td
+        LEFT JOIN task_category tc ON td.category_id =tc.id
+        GROUP BY tc.id
+
+    </select>
+    <select id="getBigData" resultType="java.util.Map">
+        SELECT tc.`name` ,COUNT(1) count
+        FROM task_details td
+        right JOIN task_category tc on td.category_id = tc.id
+        <where>
+            <if test="query.gridId != null and query.gridId != ''">
+                AND find_in_set( td.grid_id,#{query.gridId})
+            </if>
+        </where>
+        GROUP BY td.category_id,tc.`name`
+    </select>
+    <select id="getAllStatistics" resultType="java.util.Map">
+        SELECT COUNT(1) totalCount
+        ,SUM(if(td.`status`=1,1,0)) distribute
+        ,SUM(if(td.`status`=2,1,0)) beReceived
+        ,SUM(if(td.`status`=3,1,0)) doing
+        ,SUM(if(td.`status`=5,1,0)) toReject
+        ,SUM(if(td.`status`=4,1,0)) beVerified
+        ,SUM(if(td.`status`>5,1,0)) isComplete
+        ,SUM(if(td.`status` in(7,8),1,0)) isEnd
+        ,SUM(if(td.`status`=8,1,0)) invalid
+
+        FROM (select * from task_details
+        <where>
+            <if test="query.gridId != null and query.gridId != ''">
+                AND find_in_set(grid_id,#{query.gridId})
+            </if>
+        </where>
+        ) td
+
+    </select>
+
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicHousingManageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicHousingManage">
+        <id column="id" property="id" />
+        <result column="street" property="street" />
+        <result column="community" property="community" />
+        <result column="owned_grid" property="ownedGrid" />
+        <result column="house_name" property="houseName" />
+        <result column="house_address" property="houseAddress" />
+        <result column="location" property="location" />
+        <result column="house_host" property="houseHost" />
+<!--        <result column="IdCard" property="IdCard" />-->
+        <result column="customer_name" property="customerName" />
+        <result column="customer_IdCard" property="customerIdcard" />
+        <result column="customer_mobile" property="customerMobile" />
+        <result column="house_type" property="houseType" />
+        <result column="rent_status" property="rentStatus" />
+        <result column="house_number" property="houseNumber" />
+        <result column="is_bindMap" property="isBindmap" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="bak1" property="bak1" />
+        <result column="bak2" property="bak2" />
+        <result column="bak3" property="bak3" />
+        <result column="build_archives_id" property="buildArchivesId" />
+        <result column="build_archives_name" property="buildArchivesName" />
+        <result column="door_number" property="doorNumber" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, street, community, owned_grid, house_name, house_address, location, house_host, IdCard, customer_name, customer_IdCard, customer_mobile, house_type, rent_status, house_number, is_bindMap, is_delete, create_id, create_time, update_id, update_time, bak1, bak2, bak3,build_archives_id,build_archives_name,door_number
+    </sql>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id,house_name from basic_housing_manage where is_delete=0
+    </select>
+</mapper>

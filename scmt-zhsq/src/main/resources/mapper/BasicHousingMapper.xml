@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicHousingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicHousing">
+        <id column="id" property="id" />
+        <result column="street" property="street" />
+        <result column="street_id" property="streetId" />
+        <result column="community" property="community" />
+        <result column="community_id" property="communityId" />
+        <result column="owned_grid_id" property="ownedGridId" />
+        <result column="owned_grid" property="ownedGrid" />
+        <result column="street_name" property="streetName" />
+        <result column="street_number" property="streetNumber" />
+        <result column="house_id" property="houseId" />
+        <result column="house_name" property="houseName" />
+        <result column="build_archive_name" property="buildArchiveName" />
+        <result column="build_archive_id" property="buildArchiveId" />
+        <result column="house_code" property="houseCode" />
+        <result column="customer_name" property="customerName" />
+        <result column="house_address" property="houseAddress" />
+        <result column="customer_card" property="customerCard" />
+        <result column="customer_mobile" property="customerMobile" />
+        <result column="host_name" property="hostName" />
+        <result column="host_card" property="hostCard" />
+        <result column="is_map" property="isMap" />
+        <result column="house_type" property="houseType" />
+        <result column="rent_status" property="rentStatus" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="area" property="area" />
+        <result column="house_form" property="houseForm" />
+        <result column="house_property" property="houseProperty" />
+        <result column="acc_number" property="accNumber" />
+        <result column="acc_type" property="accType" />
+        <result column="acc_name" property="accName" />
+        <result column="acc_relation" property="accRelation" />
+        <result column="acc_card" property="accCard" />
+        <result column="unit" property="unit" />
+        <result column="floor" property="floor" />
+        <result column="door_number" property="doorNumber" />
+        <result column="unit_id" property="unitId" />
+        <result column="house_classification" property="houseClassification" />
+        <result column="host_gender" property="hostGender" />
+        <result column="host_permanent_address" property="hostPermanentAddress" />
+        <result column="house_nature" property="houseNature" />
+        <result column="house_nature_describe" property="houseNatureDescribe" />
+        <result column="host_current_address" property="hostCurrentAddress" />
+        <result column="have_property" property="haveProperty" />
+        <result column="host_contact" property="hostContact" />
+        <result column="is_settle" property="isSettle" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, street,is_settle, street_id, community, community_id, owned_grid_id, owned_grid, street_name, street_number, house_id, house_name, build_archive_name, build_archive_id, house_code, customer_name, house_address, customer_card, customer_mobile, host_name, host_card, is_map, house_type, rent_status, is_delete, create_id, create_time, update_id, update_time, area, house_form, house_property, acc_number, acc_type, acc_name, acc_relation, acc_card, unit, floor, door_number, unit_id,
+        host_current_address,house_nature,host_permanent_address,host_gender,house_classification,have_property,host_contact
+    </sql>
+
+    <!--    根据楼栋id获取单元-->
+    <select id="getUnitByBuildArchiveId" resultType="map">
+        select unit from basic_housing where build_archive_id = #{buildArchiveId} group by unit order by (unit+0) asc
+    </select>
+    <!--    获取层户数-->
+    <select id="getDoor" resultType="map">
+        select concat(floor,door_number) as door,id,house_type as houseType from basic_housing where build_archive_id = #{buildArchiveId} and unit = #{unit} group by floor,door_number
+    </select>
+
+    <!--    最大的层数和楼层中最大的房间数-->
+    <select id="getMaxOfFloorAndDoor"  resultType="map">
+        select max(floor+0) as floorMax,max(door_number+0) as doorMax from basic_housing where build_archive_id = #{buildArchiveId} and unit = #{unit}
+    </select>
+
+    <!--    获取房屋编号-->
+    <select id="getHouseNum" resultType="map">
+        select concat(b.floor,b.door_number) as doorNum,count(r.house_id) as num,any_value(person_type) as personType from rela_person_house as r
+            left join basic_housing as b on b.id = r.house_id
+            left join basic_person as p on p.id = r.person_id where
+            b.build_archive_id = #{buildArchiveId} and b.unit = #{unit} group by b.door_number,r.house_id
+    </select>
+
+    <select id="getRealHouse" resultType="map">
+        select concat(b.floor,b.door_number) as doorNum,any_value(special_population) as personType  from rela_person_house as r
+            left join basic_housing as b on b.id = r.house_id
+            left join basic_person as p on p.id = r.person_id where
+                b.build_archive_id = #{buildArchiveId} and b.unit = #{unit} GROUP BY doorNum ,personType
+    </select>
+    <select id="getRealHouseInfo" resultType="map">
+        select concat(floor,"楼",door_number,"号")  as doorNum,any_value(special_population) as personType  from rela_person_house as r
+            left join basic_housing as b on b.id = r.house_id
+            left join basic_person as p on p.id = r.person_id where
+                b.build_archive_id = #{buildArchiveId} and b.unit = #{unit} GROUP BY doorNum ,personType
+    </select>
+    <!--    获取房屋绑定的人-->
+    <select id="getRealPersonInfo" resultType="map">
+        SELECT
+            concat( floor, "楼", door_number, "号" ) AS doorNum,
+            any_value ( special_population ) AS personType ,
+            any_value(p.name)  as personName
+        FROM
+            rela_person_house  r
+            LEFT JOIN basic_housing  b ON b.id = r.house_id
+            LEFT JOIN basic_person  p ON p.id = r.person_id
+         where
+                b.build_archive_id = #{buildArchiveId} and b.unit = #{unit}
+    </select>
+
+    <select id="getRealDoor" resultType="map">
+        select concat(floor,door_number) as door,any_value(id) as id,any_value(house_type) as houseType,any_value(host_name) as hostName from basic_housing where build_archive_id = #{buildArchiveId} and unit = #{unit} group by floor,door_number
+    </select>
+
+    <select id="getRealDoorInfo" resultType="map">
+        select concat(floor,"楼",door_number,"号") as door,any_value(id) as id,any_value(house_type) as houseType,any_value(host_name) as hostName from basic_housing where build_archive_id = #{buildArchiveId} and unit = #{unit} group by floor,door_number
+    </select>
+
+
+    <select id="getAllPersonByRela" resultType="map">
+        select rp.house_id,bh.rent_status,bp.* from basic_person bp LEFT JOIN rela_person_house rp ON bp.id =
+        rp.person_id LEFT JOIN basic_housing bh on rp.house_id = bh.id
+        <where>
+            bp.person_type = '3' and bp.is_delete = 0 and bh.is_delete = 0 and bh.house_type="2"
+            <if test="basicPerson != null">
+                <if test="basicPerson.streetId != null and basicPerson.streetId != ''">
+                    and bp.street_id = #{basicPerson.streetId}
+                </if>
+                <if test="basicPerson.communityId != null and basicPerson.communityId != ''">
+                    and bp.community_id = #{basicPerson.communityId}
+                </if>
+                <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId != ''">
+                    and bp.owned_grid_id = #{basicPerson.ownedGridId}
+                </if>
+                <if test="basicPerson.name != null and basicPerson.name != ''">
+                    and bp.`name` = #{basicPerson.name}
+                </if>
+                <if test="basicPerson.cardId != null and basicPerson.cardId != ''">
+                    and bp.card_id = #{basicPerson.cardId}
+                </if>
+            </if>
+        </where>
+        ORDER BY
+        create_time desc
+
+    </select>
+    <select id="getAllPersonByRelaRent" resultType="map">
+        select rp.house_id,bh.rent_status,bp.* from basic_person bp LEFT JOIN rela_person_house rp ON bp.id =
+        rp.person_id LEFT JOIN basic_housing bh on rp.house_id = bh.id
+        <where>
+            bp.person_type = '3' and bp.is_delete = 0 and bh.is_delete = 0 and bh.house_type="2"
+            <if test="basicPerson != null">
+                <if test="basicPerson.ownedStreet != null and basicPerson.ownedStreet.trim() != ''">
+                    and a.owned_street = #{basicPerson.ownedStreet}
+                </if>
+                <if test="basicPerson.ownedCommunity != null and basicPerson.ownedCommunity.trim() != ''">r
+                    and a.owned_community = #{basicPerson.ownedCommunity}
+                </if>
+                <if test="basicPerson.ownedGrid != null and basicPerson.ownedGrid.trim() != ''">
+                    and a.owned_grid = #{basicPerson.ownedGrid}
+                </if>
+                <if test="basicPerson.name != null and basicPerson.name.trim() != ''">
+                    and a.`name` = #{basicPerson.name}
+                </if>
+            </if>
+        </where>
+        ORDER BY
+        create_time desc
+
+    </select>
+
+
+    <select id="statisticsHousingType" resultType="map">
+        select count(id) as house_num,house_type from basic_housing where is_delete = 0  and  build_archive_id = #{buildingArchiveId} GROUP BY house_type
+    </select>
+
+    <!--housseId其实为传递的personId，-->
+    <select id="getRoomByBuildArchiveId" resultMap="BaseResultMap">
+        select bp.is_bind,rp.relation_ship,rp.person_id,rp.house_id,bh.*
+        from basic_housing bh LEFT JOIN rela_person_house rp on bh.id = rp.house_id LEFT JOIN basic_person bp on bp.id =
+        rp.person_id
+        <where>
+            bh.is_delete = 0  and bh.house_type is not null and bh.rent_status is null
+            <if test="buildArchiveId != null and buildArchiveId != ''">
+                and build_archive_id = #{buildArchiveId}
+            </if>
+            <choose>
+                <when test="personId != null and personId != ''">
+                    <choose>
+                        <when test="type != null and type != ''">
+                            and person_id = #{personId}
+                        </when>
+                        <otherwise>
+                            and (is_bind is null or is_bind = 0)
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    and person_id is null
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getUnits" resultType="string">
+        select unit from basic_housing where is_delete = 0  and  build_archive_id = #{buildArchiveId} group by unit  ORDER BY unit ASC
+    </select>
+
+    <select id="getFloors" resultType="string">
+        select CASE WHEN floor is not null THEN CONCAT(floor,'楼') ELSE '' END from basic_housing where  is_delete = 0  and build_archive_id = #{buildArchiveId} and unit=#{unit}  group by floor  ORDER BY floor + 0 ASC
+    </select>
+
+    <select id="getDoorNumbers" resultType="map">
+        select any_value(id) as id,door_number as doorNumber,any_value(host_name) as hostName,any_value(host_card) as hostCard from basic_housing where  is_delete = 0  and build_archive_id = #{buildArchiveId} and unit= #{unit} and floor = #{floor} GROUP BY door_number ORDER BY door_number ASC
+    </select>
+
+    <select id="getHouseByPersonId" resultType="me.zhengjie.entity.BasicHousing">
+        select rp.person_id,bh.house_id,rp.relation_ship, bh.* from basic_housing bh LEFT JOIN rela_person_house rp on bh.id = rp.house_id LEFT JOIN basic_person bp on rp.person_id = bp.id  where bh.is_delete = 0 and bp.is_delete = 0 and bp.id=#{personId}
+    </select>
+
+    <!--    通过wapper 联表查询-->
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.BasicHousing">
+       SELECT
+            t.id,
+            t.street,
+            t.street_id,
+            t.community,
+            t.community_id,
+            t.owned_grid_id,
+            t.owned_grid,
+            t.street_name,
+            t.street_number,
+            t.house_id,
+            t.house_name,
+            t.build_archive_name,
+            t.build_archive_id,
+            t.house_code,
+            t.customer_name,
+            t.house_address,
+            t.customer_card,
+            t.customer_mobile,
+            t.host_name,
+            t.host_card,
+            t.is_map,
+            t1.NAME as house_type,
+            t.rent_status,
+            t.is_delete,
+            t.create_id,
+            t.create_time,
+            t.update_id,
+            t.update_time,
+            t.area,
+            t3.NAME as house_form,
+            t2.NAME as house_property,
+            t.acc_number,
+            t4.NAME as acc_type,
+            t.acc_name,
+            t.acc_relation,
+            t.acc_card,
+            t.unit,
+            t.floor,
+            t.door_number,
+            t.unit_id
+        FROM
+            basic_housing t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'houseType' AND t1.number = t.house_type
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'housePropertyData' AND t2.number = t.house_property
+            LEFT JOIN grid_dictionary t3 ON t3.field_name = 'houseFormData' AND t3.number = t.house_form
+            LEFT JOIN grid_dictionary t4 ON t4.field_name = 'accTypeData' AND t4.number = t.acc_type
+             ${ew.customSqlSegment}
+    </select>
+    <!--    查询房屋结构图左侧树菜单-->
+     <select id="selectHouseTree" resultType="map">
+      SELECT
+        * FROM (
+        SELECT
+            id,
+            NAME AS title,
+            parent_id AS pid,
+            create_time,
+            '1' AS lel
+        FROM
+            grid_dept
+        WHERE
+            attribute IN (0, 1, 2 )
+            AND grid_dept.is_deleted = 0
+            <if test="powerMap != null">
+                <if test="powerMap.streetId != null and powerMap.streetId != ''">
+                    AND grid_dept.id = #{powerMap.streetId}
+                    or grid_dept.parent_id = #{powerMap.streetId}
+                </if>
+                <if test="powerMap.communityId != null and powerMap.communityId != ''">
+                    AND grid_dept.id = #{powerMap.communityId}
+                    or grid_dept.id = (select parent_id from grid_dept where id = #{powerMap.communityId} )
+                </if>
+                <if test="powerMap.gridId != null and powerMap.gridId != ''">
+                    AND grid_dept.id = (select street_id from basic_grids where id = #{powerMap.gridId} )
+                    or grid_dept.id = (select community_id from basic_grids where id = #{powerMap.gridId} )
+                </if>
+            </if>
+            UNION ALL
+        SELECT
+            id,
+            NAME AS title,
+            ifnull( community_id, 0 ) AS pid,
+            create_time,
+            '2' AS lel
+        FROM
+            basic_grids
+        WHERE
+            basic_grids.is_delete = 0
+            <if test="powerMap != null">
+                <if test="powerMap.streetId != null and powerMap.streetId != ''">
+                    AND basic_grids.street_id = #{powerMap.streetId}
+                </if>
+                <if test="powerMap.communityId != null and powerMap.communityId != ''">
+                    AND basic_grids.community_id = #{powerMap.communityId}
+                </if>
+                <if test="powerMap.gridId != null and powerMap.gridId != ''">
+                    AND basic_grids.id = #{powerMap.gridId}
+                </if>
+            </if>
+            UNION ALL
+        SELECT
+            id,
+            NAME AS title,
+            ifnull( grid_id, 0 ) AS pid,
+            create_time,
+            '3' AS lel
+        FROM
+            basic_housing_estate
+        where
+            is_delete=0
+            <if test="powerMap != null">
+                <if test="powerMap.streetId != null and powerMap.streetId != ''">
+                    AND basic_housing_estate.street_id = #{powerMap.streetId}
+                </if>
+                <if test="powerMap.communityId != null and powerMap.communityId != ''">
+                    AND basic_housing_estate.community_id = #{powerMap.communityId}
+                </if>
+                <if test="powerMap.gridId != null and powerMap.gridId != ''">
+                    AND basic_housing_estate.grid_id = #{powerMap.gridId}
+                </if>
+            </if>
+            UNION ALL
+        SELECT
+            id,
+            building_name AS title,
+            ifnull( housing_estate, 0 ) AS pid,
+            create_time,
+            '4' AS lel
+        FROM
+            t_building_archives t
+        WHERE
+            building_type = 1
+            <if test="powerMap != null">
+                <if test="powerMap.streetId != null and powerMap.streetId != ''">
+                    AND t.street_id = #{powerMap.streetId}
+                </if>
+                <if test="powerMap.communityId != null and powerMap.communityId != ''">
+                    AND t.community_id = #{powerMap.communityId}
+                </if>
+                <if test="powerMap.gridId != null and powerMap.gridId != ''">
+                    AND t.grid = #{powerMap.gridId}
+                </if>
+            </if>
+            and is_delete=0
+        ) aa
+        ORDER BY create_time
+    </select>
+</mapper>

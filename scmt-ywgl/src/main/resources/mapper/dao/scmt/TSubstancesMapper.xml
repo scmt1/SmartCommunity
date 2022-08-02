@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.dao.mapper.TSubstancesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.dao.entity.TSubstances">
+        <id column="id" property="id" />
+        <result column="code" property="code" />
+        <result column="name" property="name" />
+        <result column="specification_model" property="specificationModel" />
+        <result column="standard" property="standard" />
+        <result column="number" property="number" />
+        <result column="unit" property="unit" />
+        <result column="affiliated_unit" property="affiliatedUnit" />
+        <result column="parking_position" property="parkingPosition" />
+        <result column="map_location" property="mapLocation" />
+        <result column="remark" property="remark" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="bak1" property="bak1" />
+        <result column="bak2" property="bak2" />
+        <result column="bak3" property="bak3" />
+        <result column="bak4" property="bak4" />
+        <result column="bak5" property="bak5" />
+        <result column="isdelete" property="isdelete" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, code, name, specification_model, standard, number, unit, affiliated_unit,parking_position, map_location, remark, create_id, create_time, update_id, update_time, bak1, bak2, bak3, bak4, bak5, isdelete
+    </sql>
+
+</mapper>

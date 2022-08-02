@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqGridMemberMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqGridMember">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="type" property="type" />
+        <result column="sex" property="sex" />
+        <result column="birthday" property="birthday" />
+        <result column="nation" property="nation" />
+        <result column="id_card" property="idCard" />
+        <result column="phone" property="phone" />
+        <result column="fixed_telephone" property="fixedTelephone" />
+        <result column="personal_profile" property="personalProfile" />
+        <result column="head_portrait" property="headPortrait" />
+        <result column="street_id" property="streetId" />
+        <result column="street_name" property="streetName" />
+        <result column="community_id" property="communityId" />
+        <result column="community_name" property="communityName" />
+        <result column="post" property="post" />
+        <result column="post_level" property="postLevel" />
+        <result column="responsibilities" property="responsibilities" />
+        <result column="position" property="position" />
+        <result column="order_number" property="orderNumber" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, type, sex, birthday, nation, id_card, phone, fixed_telephone, personal_profile, head_portrait, street_id,street_name, community_id,community_name,post, post_level, responsibilities, position, order_number, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+<!--    网格长 Mapper 接口-->
+    <select id="queryAllTZhsqGridManageListByGridId" resultType="me.zhengjie.entity.TZhsqGridMember">
+        SELECT * FROM t_zhsq_grid_member WHERE Id IN (SELECT grids_person_id FROM rela_grids_person_grids WHERE grids_id = #{gridId}) AND post = '网格长' and is_delete=0
+    </select>
+
+    <!--    网格员 Mapper 接口-->
+    <select id="queryAllTZhsqGridMemberListByGridId" resultType="me.zhengjie.entity.TZhsqGridMember">
+        SELECT * FROM t_zhsq_grid_member WHERE Id IN (SELECT grids_person_id FROM rela_grids_person_grids WHERE grids_id = #{gridId}) AND post LIKE '%网格员%' and is_delete=0
+    </select>
+
+    <select id="existsGrid" resultType="me.zhengjie.entity.TZhsqGridMember">
+        SELECT * FROM t_zhsq_grid_member where Id IN (SELECT grids_person_id FROM rela_grids_person_grids WHERE grids_id = #{s}) AND post = '网格长' and is_delete=0
+    </select>
+
+
+    <select id="selectByCommunityIdAndGridId" resultType="int">
+        select count(1) FROM t_zhsq_grid_member
+        WHERE  is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and id IN (SELECT grids_person_id from rela_grids_person_grids where grids_id = #{gridId})
+        </if>
+
+    </select>
+
+
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.TZhsqGridMember">
+     SELECT * from (
+        SELECT
+            t.id,
+            t.NAME,
+            t2.NAME as type,
+            t.sex,
+            t.birthday,
+            t1.NAME as nation,
+            t.id_card,
+            t.phone,
+            t.fixed_telephone,
+            t.personal_profile,
+            t.head_portrait,
+            t.street_id,
+            t.street_name,
+            t.community_id,
+            t.community_name,
+            t.post,
+            t.post_level,
+            t.responsibilities,
+            t.position,
+            t.order_number,
+            t.is_delete,
+            t.create_id,
+            t.create_time,
+            t.update_id,
+            t.update_time,
+            t.delete_id,
+            t.delete_time
+        FROM
+            t_zhsq_grid_member t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData' AND t1.number = t.nation
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData' AND t2.number = t.type
+            ) aa
+             ${ew.customSqlSegment}
+    </select>
+    <!-- 获取网格人员树-->
+    <select id="selectGridMemberTree" resultType="map">
+      SELECT
+            *
+        FROM
+            (
+            SELECT
+                id,
+                NAME AS title,
+                parent_id AS pid,
+                create_time,
+                NULL AS img
+            FROM
+                grid_dept
+            WHERE
+                attribute IN (0,1,2)
+                AND grid_dept.is_deleted = 0 UNION ALL
+            SELECT
+                id,
+                name AS title,
+                ifnull(community_id, 0 ) AS pid,
+                create_time,
+                head_portrait AS img
+            FROM
+                t_zhsq_grid_member t
+            WHERE
+            is_delete = 0
+            ) aa
+        ORDER BY
+            create_time
+    </select>
+</mapper>

@@ -1,0 +1,980 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicPersonMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicPerson">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="birth_date" property="birthDate" />
+        <result column="nation" property="nation" />
+        <result column="card_id" property="cardId" />
+        <result column="person_type" property="personType" />
+        <result column="political_face" property="politicalFace" />
+        <result column="residence_address" property="residenceAddress" />
+        <result column="residential_address" property="residentialAddress" />
+        <result column="street_id" property="streetId" />
+        <result column="street_name" property="streetName" />
+        <result column="community_id" property="communityId" />
+        <result column="community_name" property="communityName" />
+        <result column="owned_grid_id" property="ownedGridId" />
+        <result column="owned_grid" property="ownedGrid" />
+        <result column="owned_housing" property="ownedHousing" />
+        <result column="building_archive_id" property="buildingArchiveId" />
+        <result column="special_population" property="specialPopulation" />
+        <result column="resident_grid" property="residentGrid" />
+        <result column="owned_houseId" property="ownedHouseid" />
+        <result column="housing_name" property="housingName" />
+        <result column="relation_ship" property="relationShip" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="img_path" property="imgPath" />
+        <result column="position" property="position" />
+        <result column="table_type" property="tableType" />
+        <result column="table_type_name" property="tableTypeName" />
+        <result column="hobby" property="hobby" />
+        <result column="phone" property="phone" />
+        <result column="is_bind" property="isBind" />
+        <result column="acc_number" property="accNumber" />
+        <result column="acc_type" property="accType" />
+        <result column="acc_name" property="accName" />
+        <result column="acc_relation" property="accRelation" />
+        <result column="acc_card" property="accCard" />
+        <result column="work_address" property="workAddress" />
+        <result column="occupation" property="occupation" />
+        <result column="religious_belief" property="religiousBelief" />
+        <result column="marital_status" property="maritalStatus" />
+        <result column="military_service" property="militaryService" />
+        <result column="is_preferential_treatment" property="isPreferentialTreatment" />
+        <result column="is_lonely" property="isLonely" />
+        <result column="is_minimum_living" property="isMinimumLiving" />
+        <result column="serious_illness" property="seriousIllness" />
+        <result column="is_disabled" property="isDisabled" />
+        <result column="disability_level" property="disabilityLevel" />
+        <result column="party_relationship_managemen" property="partyRelationshipManagemen" />
+        <result column="party_relationship_managemen_address" property="partyRelationshipManagemenAddress" />
+        <result column="disability_type" property="disabilityType" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, sex, birth_date, nation, card_id, person_type, political_face, residence_address, residential_address, street_id, street_name, community_id, community_name, owned_grid_id, owned_grid, owned_housing, building_archive_id, special_population, resident_grid, owned_houseId, housing_name, relation_ship, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time, img_path, position, house_type, table_type, hobby, phone, is_bind, acc_number, acc_type, acc_name, acc_relation, acc_card, work_address, occupation, religious_belief, marital_status, military_service, is_preferential_treatment, is_lonely, is_minimum_living, serious_illness, is_disabled, disability_level, party_relationship_managemen, party_relationship_managemen_address, disability_type
+    </sql>
+
+
+    <select id="getPersonByHouseId" resultType="me.zhengjie.entity.BasicPerson">
+        select bp.id,
+      bp.name,
+      bp.sex,
+      bp.birth_date,
+      bp.nation,
+      bp.card_id,
+      bp.person_type,
+      bp.political_face,
+      bp.residence_address,
+      bp.residential_address,
+      bp.street_id,
+      bp.street_name,
+      bp.community_id,
+      bp.community_name,
+      bp.owned_grid,
+      bp.owned_grid_id,
+      bp.owned_housing,
+      bp.special_population,
+      bp.resident_grid,
+      bp.owned_houseId,
+      bp.housing_name,
+      bp.is_delete,
+      bp.create_id,
+      bp.create_time,
+      bp.update_id,
+      bp.update_time,
+      bp.delete_id,
+      bp.delete_time,
+      bp.img_path,
+      bp.position,
+      bp.building_archive_id,
+      bp.is_bind,
+      bp.acc_number,
+      bp.acc_type,
+      bp.acc_name ,
+      bp.acc_relation ,rp.relation_ship  from basic_person bp LEFT JOIN rela_person_house rp on bp.id=rp.person_id WHERE bp.is_delete=0 and rp.house_id = #{houseId}
+    </select>
+
+    <!--    人口分布统计-->
+    <select id="getBasicPersonCount" resultType="map">
+      SELECT
+            bp.community_name AS community,
+            bg.`name` AS grid,
+            any_value(bp.person_type) as person_type,
+            count( bp.id ) AS all_count,
+            SUM( CASE WHEN bp.person_type = "2" THEN 1 ELSE 0 END ) AS usually,
+            SUM( CASE WHEN bp.person_type = "1" THEN 1 ELSE 0 END ) AS huji,
+            SUM( CASE WHEN bp.person_type = "3" THEN 1 ELSE 0 END ) AS liudong,
+            SUM( CASE WHEN bp.person_type = "5" THEN 1 ELSE 0 END ) AS jingwai,
+            SUM( CASE WHEN bp.person_type = "4" THEN 1 ELSE 0 END ) AS waichu
+        FROM
+            basic_person bp
+            LEFT JOIN basic_grids bg ON bp.owned_grid_id = bg.id
+        <where>
+            <if test="basicPerson != null">
+                <if test="basicPerson.streetId != null and basicPerson.streetId != ''">
+                    and bp.street_id = #{basicPerson.streetId}
+                </if>
+                <if test="basicPerson.communityId != null and basicPerson.communityId != ''">
+                    and bp.community_id = #{basicPerson.communityId}
+                </if>
+                <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId != ''">
+                    and bp.owned_grid_id = #{basicPerson.ownedGridId}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+            community,
+            grid
+    </select>
+
+    <!--    特殊人群统计-->
+    <select id="getSpecialPersonCount" resultType="map">
+       SELECT
+            any_value ( bp.community_name ) AS community,
+            any_value ( bg.`name` ) AS grid,
+            any_value ( bp.special_population ) AS special_population,
+            count( bp.id ) AS all_count,
+            SUM( CASE WHEN bp.special_population = "2" THEN 1 ELSE 0 END ) AS shejiang,
+            SUM( CASE WHEN bp.special_population = "3" THEN 1 ELSE 0 END ) AS xidu,
+            SUM( CASE WHEN bp.special_population = "4" THEN 1 ELSE 0 END ) AS xingshi,
+            SUM( CASE WHEN bp.special_population = "6" THEN 1 ELSE 0 END ) AS shangfang,
+            SUM( CASE WHEN bp.special_population = "5" THEN 1 ELSE 0 END ) AS jingshen,
+			SUM( CASE WHEN bp.special_population = "7" THEN 1 ELSE 0 END ) AS shexie        FROM
+            basic_person bp
+            LEFT JOIN basic_grids bg ON bp.owned_grid_id = bg.id
+        <where>
+            <if test="basicPerson != null">
+                <if test="basicPerson.streetId != null and basicPerson.streetId != ''">
+                    and bp.street_id = #{basicPerson.streetId}
+                </if>
+                <if test="basicPerson.communityId != null and basicPerson.communityId != ''">
+                    and bp.community_id = #{basicPerson.communityId}
+                </if>
+                <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId != ''">
+                    and bp.owned_grid_id = #{basicPerson.ownedGridId}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+            community,
+            grid
+    </select>
+
+    <!--    根据小区id，获取楼栋信息-->
+    <select id="getBuildArchiveByEstateId" resultType="me.zhengjie.entity.TBuildingArchives">
+        select * from t_building_archives where housing_estate = #{estateId}
+    </select>
+
+    <!--    统计各网格人口数据-->
+    <select id="statisticsGridPerson" resultType="map">
+      SELECT
+            t.NAME AS pname,
+            any_value(ph.person_id) AS personId,
+            any_value(ph.house_id)  AS houseId,
+            any_value(b.position)  AS location,
+            any_value(h.house_address)  AS houseAddress
+        FROM
+            `basic_person` t
+            LEFT JOIN rela_person_house ph ON t.id = ph.person_id
+            LEFT JOIN basic_housing h ON h.id = ph.house_id
+            LEFT JOIN t_building_archives b ON b.id = h.build_archive_id
+        GROUP BY
+            pname,
+            personId
+    </select>
+
+    <!--    统计人员坐标点-->
+    <select id="statisticsPersonLocation" resultType="map">
+       SELECT
+            t.NAME AS pname,
+            any_value(ph.person_id) AS personId,
+            any_value(ph.house_id)  AS houseId,
+            any_value(b.position)  AS location,
+            any_value(h.house_address)  AS houseAddress
+        FROM
+            `basic_person` t
+            LEFT JOIN rela_person_house ph ON t.id = ph.person_id
+            LEFT JOIN basic_housing h ON h.id = ph.house_id
+            LEFT JOIN t_building_archives b ON b.id = h.build_archive_id
+        GROUP BY
+            pname,
+            personId
+    </select>
+
+    <!--    统计各人口类型数据-->
+    <select id="statisticsPersonType" resultType="map">
+        select any_value (p.person_type) as person_type,count(p.person_type) as person_num from rela_person_house as r
+           LEFT JOIN basic_housing as h on h.id = r.house_id and where h.build_archive_id = #{buildingArchiveId}
+           LEFT JOIN basic_person as p on p.id = r.person_id
+           GROUP by person_type
+    </select>
+
+    <!--    根据cardid获取人口-->
+    <select id="getPersonByCardId" resultType="map">
+        select name,sex,nation,political_face,phone,street_id,street_name,community_id,community_name,owned_grid,owned_grid_id,residential_address from basic_person where card_id = #{cardId}
+    </select>
+
+
+    <select id="getCardId" resultType="map">
+        select card_id from basic_person
+    </select>
+
+    <!--    统计党员-->
+    <select id="statisticsPersonPoliticaloutlook" resultType="map">
+        select political_face from basic_person where political_face like '1' AND (community_id = #{community} OR street_id = #{community} OR owned_grid_id = #{community})
+    </select>
+
+    <!--    统计网格员-->
+    <select id="statisticsPersongridmember" resultType="map">
+        select post from t_zhsq_grid_member where community_id = #{community} OR street_id = #{community}
+    </select>
+
+    <!--    统计干部-->
+    <select id="statisticsPersoncommunity"  resultType="map">
+        select post from t_zhsq_community_cadres where community_id = #{community} OR street_id = #{community}
+    </select>
+
+    <!--    统计志愿者-->
+    <select id="statisticsPersonvolunteer" resultType="map">
+        select id from t_zhsq_volunteer where street_id = #{community} OR community_id = #{community} OR owned_grid = #{community}
+    </select>
+
+    <!--    统计人口类型-->
+    <select id="statisticspersontype" resultType="map">
+        select person_type from basic_person where community_id = #{community} OR street_id = #{community} OR owned_grid_id = #{community}
+    </select>
+
+    <!--    统计事件-->
+    <select id="statisticspersonteventlist" resultType="map">
+        select event_classification,create_time from t_zhsq_event_list where street_id = #{community} OR community_id = #{community} OR grid_id = #{community}
+    </select>
+
+    <!--    统计该社区下男女人口比例-->
+    <select id="getPersonDataMaleToFemaleratio" resultType="map">
+        select
+        COUNT(case when sex = '男' then sex end  ) as maleCount,
+        COUNT(case when sex = '女' then sex end ) as femaleCount,
+        COUNT(case when sex IN('男','女') then sex end) as allCount
+        from basic_person
+        <where>
+            is_delete = 0
+            <if test="communityId != null and '' != communityId">
+                and community_id = #{communityId}
+            </if>
+            <if test="gridId != null and gridId != ''">
+                and owned_grid_id = #{gridId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据街道名查询街道id-->
+    <select id="getStreetId" resultType="string">
+        select street_id from basic_person where street_name = #{streetName} GROUP BY street_id limit 0,1
+    </select>
+
+    <!--根据社区名查询社区id-->
+    <select id="getCommunityId" resultType="string">
+        select community_id from basic_person where community_name = #{communityName} GROUP BY community_id limit 0,1
+    </select>
+
+    <!--根据网格名查询网格id-->
+    <select id="getOwnedGridId" resultType="string">
+        select owned_grid_id from basic_person where owned_grid = #{ownedGrid} GROUP BY owned_grid_id limit 0,1
+    </select>
+
+
+    <!--    统计人口类型数量-->
+    <select id="getBasicPersonCountByPersonType" resultType="map">
+        SELECT
+        ifnull(SUM( CASE WHEN person_type = "2" THEN 1 ELSE 0 END ),0) AS usually,
+        ifnull(SUM( CASE WHEN person_type = "1" THEN 1 ELSE 0 END ),0) AS huji,
+        ifnull(SUM( CASE WHEN person_type = "3" THEN 1 ELSE 0 END ),0) AS liudong,
+        ifnull(SUM( CASE WHEN person_type = "4" THEN 1 ELSE 0 END ),0) AS jingwai,
+        ifnull(SUM( CASE WHEN person_type = "5" THEN 1 ELSE 0 END ),0) AS waichu,
+        ifnull(SUM( CASE WHEN person_type = "6" THEN 1 ELSE 0 END ),0) AS shexie
+        FROM
+        basic_person
+        WHERE
+        is_delete = 0
+        <if test="communityId != null and communityId != ''">
+            and community_id = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and owned_grid_id = #{gridId}
+        </if>
+    </select>
+
+    <!--    统计人员类型（老人、精神病人....）-->
+    <select id="getBasicPersonCountByPopulation" resultType="map">
+        SELECT
+        ifnull(SUM( CASE WHEN special_population = "2" THEN 1 ELSE 0 END ),0) AS shejiang,
+        ifnull(SUM( CASE WHEN special_population = "3" THEN 1 ELSE 0 END ),0) AS xidu,
+        ifnull(SUM( CASE WHEN special_population = "4" THEN 1 ELSE 0 END ),0) AS xingshi,
+        ifnull(SUM( CASE WHEN special_population = "5" THEN 1 ELSE 0 END ),0) AS shangfang,
+        ifnull(SUM( CASE WHEN special_population = "6" THEN 1 ELSE 0 END ),0) AS jingshen
+        FROM
+        basic_person
+        WHERE
+        is_delete = 0
+        <if test="communityId != null and communityId != ''">
+            and community_id = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and owned_grid_id = #{gridId}
+        </if>
+    </select>
+
+    <!--    人群标签统计-->
+    <select id="getTableTypeCount" resultType="map">
+        SELECT
+        ifnull( SUM( CASE WHEN bp.table_type LIKE "%1%" THEN 1 ELSE 0 END ), 0 ) AS putong,
+        ifnull( SUM( CASE WHEN bp.table_type LIKE "%2%" THEN 1 ELSE 0 END ), 0 ) AS laoren,
+        ifnull( SUM( CASE WHEN bp.table_type LIKE "%3%" THEN 1 ELSE 0 END ), 0 ) AS dangyuan,
+        ifnull( SUM( CASE WHEN bp.table_type LIKE "%4%" THEN 1 ELSE 0 END ), 0 ) AS tuihu,
+        ifnull( SUM( CASE WHEN bp.table_type LIKE "%5%" THEN 1 ELSE 0 END ), 0 ) AS canji,
+        ifnull( SUM( CASE WHEN   bp.special_population = "2" or bp.special_population = "3" or bp.special_population = "4" or bp.special_population = "5" or bp.special_population = "6" or bp.special_population = "7"  THEN 1 ELSE 0 END ), 0 ) AS teshu
+        FROM
+        basic_person bp
+        WHERE
+        is_delete = 0
+        <if test="communityId != null and communityId != ''">
+            and community_id = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and owned_grid_id = #{gridId}
+        </if>
+    </select>
+
+    <!--    通过wapper 联表查询-->
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.BasicPerson">
+          SELECT
+            t.id,
+            t.NAME,
+            t.sex,
+            t.phone,
+            t1.NAME AS nation,
+            t.birth_date,
+            t.card_id,
+            t3.NAME AS person_type,
+            t2.NAME AS political_face,
+            t.residence_address,
+            t.residential_address,
+            t.street_name,
+            t.community_name as community_name,
+            t.owned_grid as owned_grid,
+            t.owned_housing,
+            t.street_id,
+            t.community_id,
+            t.owned_grid_id,
+            t7.NAME AS special_population,
+            t.resident_grid,
+            t.create_id,
+            t.create_time,
+            t6.NAME AS table_type_name,
+            t4.NAME AS acc_relation,
+            t.work_address,
+            t.occupation,
+            t8.NAME AS religious_belief,
+            t9.NAME AS marital_status,
+            t10.NAME AS military_service,
+            t.is_preferential_treatment,
+            t.is_lonely,
+            t.is_minimum_living,
+            t.serious_illness,
+            t.is_disabled,
+            t.disability_type,
+            t.disability_level,
+            t11.NAME AS party_relationship_managemen,
+            t.party_relationship_managemen_address,
+            t.is_delete
+        FROM
+            basic_person t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData'
+            AND t1.number = t.nation
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData'
+            AND t2.number = t.political_face
+            LEFT JOIN grid_dictionary t3 ON t3.field_name = 'personTypeData'
+            AND t3.number = t.person_type
+            LEFT JOIN grid_dictionary t4 ON t4.field_name = 'relationShipData'
+            AND t4.number = t.acc_relation
+            LEFT JOIN grid_dictionary t6 ON t6.field_name = 'tableTypeData'
+            AND t6.number = t.table_type
+            LEFT JOIN grid_dictionary t7 ON t7.field_name = 'specialPersonData'
+            AND t7.number = t.special_population
+            LEFT JOIN grid_dictionary t8 ON t8.field_name = 'religiousData'
+            AND t8.number = t.religious_belief
+            LEFT JOIN grid_dictionary t9 ON t9.field_name = 'maritalStatus'
+            AND t9.number = t.marital_status
+            LEFT JOIN grid_dictionary t10 ON t10.field_name = 'militaryService'
+            AND t10.number = t.military_service
+            LEFT JOIN grid_dictionary t11 ON t11.field_name = 'partyRelationshipManagemen'
+            AND t11.number = t.party_relationship_managemen
+             ${ew.customSqlSegment}
+    </select>
+
+    <!--    通过wapper 联表查询-->
+    <select id="selectMapByMyWrapper" resultType="java.util.Map">
+          SELECT
+            t.id,
+            t.NAME,
+            t.sex,
+            t.phone,
+            t1.NAME AS nation,
+            t.birth_date,
+            t.card_id,
+            t3.NAME AS person_type,
+            t2.NAME AS political_face,
+            t.residence_address,
+            t.residential_address,
+            t.street_name,
+            t.community_name as community_name,
+            t.owned_grid as owned_grid,
+            t.owned_housing,
+            t.street_id,
+            t.community_id,
+            t.owned_grid_id,
+            t7.NAME AS special_population,
+            t.resident_grid,
+            t.create_id,
+            t.create_time,
+            t6.NAME AS table_type_name,
+            t4.NAME AS acc_relation,
+            t.work_address,
+            t.occupation,
+            t8.NAME AS religious_belief,
+            t9.NAME AS marital_status,
+            t10.NAME AS military_service,
+            t.is_preferential_treatment,
+            t.is_lonely,
+            t.is_minimum_living,
+            t.serious_illness,
+            t.is_disabled,
+            t.disability_type,
+            t.disability_level,
+            t11.NAME AS party_relationship_managemen,
+            t.party_relationship_managemen_address,
+            t.is_delete
+        FROM
+            basic_person t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData'
+            AND t1.number = t.nation
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData'
+            AND t2.number = t.political_face
+            LEFT JOIN grid_dictionary t3 ON t3.field_name = 'personTypeData'
+            AND t3.number = t.person_type
+            LEFT JOIN grid_dictionary t4 ON t4.field_name = 'relationShipData'
+            AND t4.number = t.acc_relation
+            LEFT JOIN grid_dictionary t6 ON t6.field_name = 'tableTypeData'
+            AND t6.number = t.table_type
+            LEFT JOIN grid_dictionary t7 ON t7.field_name = 'specialPersonData'
+            AND t7.number = t.special_population
+            LEFT JOIN grid_dictionary t8 ON t8.field_name = 'religiousData'
+            AND t8.number = t.religious_belief
+            LEFT JOIN grid_dictionary t9 ON t9.field_name = 'maritalStatus'
+            AND t9.number = t.marital_status
+            LEFT JOIN grid_dictionary t10 ON t10.field_name = 'militaryService'
+            AND t10.number = t.military_service
+            LEFT JOIN grid_dictionary t11 ON t11.field_name = 'partyRelationshipManagemen'
+            AND t11.number = t.party_relationship_managemen
+             ${ew.customSqlSegment}
+    </select>
+    <!--    通过wapper 分页联表查询-->
+    <select id="selectByMyWrapperByPage" resultType="java.util.Map">
+          SELECT
+            t.id,
+            t.NAME,
+            t.sex,
+            t.phone,
+            t1.NAME AS nation,
+            t.birth_date,
+            t.card_id,
+            t3.NAME AS person_type,
+            t2.NAME AS political_face,
+            t.residence_address,
+            t.residential_address,
+            t.street_name,
+            t.community_name as community_name,
+            t.owned_grid as owned_grid,
+            t.owned_housing,
+            t.street_id,
+            t.community_id,
+            t.owned_grid_id,
+            t7.NAME AS special_population,
+            t.resident_grid,
+            t.create_id,
+            t.create_time,
+            t6.NAME AS table_type_name,
+            t4.NAME AS acc_relation,
+            t.work_address,
+            t.occupation,
+            t8.NAME AS religious_belief,
+            t9.NAME AS marital_status,
+            t10.NAME AS military_service,
+            t.is_preferential_treatment,
+            t.is_lonely,
+            t.is_minimum_living,
+            t.serious_illness,
+            t.is_disabled,
+            t.disability_type,
+            t.disability_level,
+            t11.NAME AS party_relationship_managemen,
+            t.party_relationship_managemen_address,
+            t.is_delete
+        FROM
+            basic_person t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData'
+            AND t1.number = t.nation
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData'
+            AND t2.number = t.political_face
+            LEFT JOIN grid_dictionary t3 ON t3.field_name = 'personTypeData'
+            AND t3.number = t.person_type
+            LEFT JOIN grid_dictionary t4 ON t4.field_name = 'relationShipData'
+            AND t4.number = t.acc_relation
+            LEFT JOIN grid_dictionary t6 ON t6.field_name = 'tableTypeData'
+            AND t6.number = t.table_type
+            LEFT JOIN grid_dictionary t7 ON t7.field_name = 'specialPersonData'
+            AND t7.number = t.special_population
+            LEFT JOIN grid_dictionary t8 ON t8.field_name = 'religiousData'
+            AND t8.number = t.religious_belief
+            LEFT JOIN grid_dictionary t9 ON t9.field_name = 'maritalStatus'
+            AND t9.number = t.marital_status
+            LEFT JOIN grid_dictionary t10 ON t10.field_name = 'militaryService'
+            AND t10.number = t.military_service
+            LEFT JOIN grid_dictionary t11 ON t11.field_name = 'partyRelationshipManagemen'
+            AND t11.number = t.party_relationship_managemen
+        where
+        t.is_delete=0
+        <if test="basicPerson != null">
+            <if test="basicPerson.id != null and basicPerson.id !=''">
+                and  t.id = #{basicPerson.id}
+            </if>
+            <if test="basicPerson.streetId != null and basicPerson.streetId !=''">
+                and t.street_id = #{basicPerson.streetId}
+            </if>
+            <if test="basicPerson.communityId != null and basicPerson.communityId !=''">
+                and t.community_id = #{basicPerson.communityId}
+            </if>
+            <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId !=''">
+                and t.owned_grid_id = #{basicPerson.ownedGridId}
+            </if>
+            <if test="basicPerson.personType != null and basicPerson.personType !=''">
+                and t.person_type = #{basicPerson.personType}
+            </if>
+            <if test="basicPerson.startDate != null and basicPerson.startDate !=''">
+                and t.create_time &gt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.endDate != null and basicPerson.endDate !=''">
+                and t.create_time &lt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.searchInfo != null and basicPerson.searchInfo !=''">
+                and(  t.name LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t.phone LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t.card_id LIKE CONCAT('%',#{basicPerson.searchInfo},'%'))
+            </if>
+        </if>
+        order by t.create_time desc
+    </select>
+    <!--    通过wapper 联表查询人和房信息-->
+    <select id="selectInfoByMyWrapper" resultType="java.util.Map">
+        SELECT
+            t.id,
+            t.NAME,
+            t.sex,
+            t.phone,
+            t1.NAME AS nation,
+            t.birth_date,
+            t.card_id,
+            t3.NAME AS person_type,
+            t2.NAME AS political_face,
+            t.residence_address,
+            t.residential_address,
+            t.street_name,
+            t.community_name as community_name,
+            t.owned_grid as owned_grid,
+            t.owned_housing,
+            t.street_id,
+            t.community_id,
+            t.owned_grid_id,
+            t7.NAME AS special_population,
+            t.resident_grid,
+            t5.NAME AS relation_ship,
+            t.create_id,
+            t.create_time,
+            t6.NAME AS table_type_name,
+            t4.NAME AS acc_relation,
+            t.work_address,
+            t.occupation,
+            t8.NAME AS religious_belief,
+            t9.NAME AS marital_status,
+            t10.NAME AS military_service,
+            t.is_preferential_treatment,
+            t.is_lonely,
+            t.is_minimum_living,
+            t.serious_illness,
+            t.is_disabled,
+            t.disability_type,
+            t.disability_level,
+            t11.NAME AS party_relationship_managemen,
+            t.party_relationship_managemen_address,
+            t.is_delete,
+            ta3.province,
+            ta3.city,
+            ta3.county,
+            ta4.build_archive_name,
+            CONCAT( ta4.unit, '单元' ) AS unit,
+            CONCAT( ta4.floor, '层' ) AS floor,
+            CONCAT( ta4.door_number, '号' ) AS door_number,
+            ta4.host_name,
+            ta4.host_gender,
+            ta4.host_contact,
+            ta4.host_card,
+            ta4.host_permanent_address,
+            ta4.have_property,
+            tb1.NAME AS house_type,
+            tb2.NAME AS house_classification,
+            tb3.NAME AS house_nature,
+            ta4.host_current_address,
+            ta4.house_nature_describe,
+            ta4.house_name
+        FROM
+            basic_person t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData'
+            AND t1.number = t.nation
+            LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData'
+            AND t2.number = t.political_face
+            LEFT JOIN grid_dictionary t3 ON t3.field_name = 'personTypeData'
+            AND t3.number = t.person_type
+            LEFT JOIN grid_dictionary t4 ON t4.field_name = 'relationShipData'
+            AND t4.number = t.acc_relation
+            LEFT JOIN grid_dictionary t6 ON t6.field_name = 'tableTypeData'
+            AND t6.number = t.table_type
+            LEFT JOIN grid_dictionary t7 ON t7.field_name = 'specialPersonData'
+            AND t7.number = t.special_population
+            LEFT JOIN grid_dictionary t8 ON t8.field_name = 'religiousData'
+            AND t8.number = t.religious_belief
+            LEFT JOIN grid_dictionary t9 ON t9.field_name = 'maritalStatus'
+            AND t9.number = t.marital_status
+            LEFT JOIN grid_dictionary t10 ON t10.field_name = 'militaryService'
+            AND t10.number = t.military_service
+            LEFT JOIN grid_dictionary t11 ON t11.field_name = 'partyRelationshipManagemen'
+            AND t11.number = t.party_relationship_managemen
+            LEFT JOIN rela_person_house ta2 ON ta2.person_id = t.id
+            LEFT JOIN basic_housing ta4 ON ta2.house_id = ta4.id
+            LEFT JOIN basic_housing_estate ta3 ON ta3.id = ta4.house_id
+            LEFT JOIN grid_dictionary tb1 ON tb1.field_name = 'houseType'
+            AND tb1.number = ta4.house_type
+            LEFT JOIN grid_dictionary tb2 ON t2.field_name = 'houseClassification'
+            AND tb2.number = ta4.house_classification
+            LEFT JOIN grid_dictionary tb3 ON t3.field_name = 'houseNature'
+            AND tb3.number = ta4.house_nature
+            LEFT JOIN grid_dictionary t5 ON t5.field_name = 'relationShipData'
+            AND t5.number = ta2.relation_ship
+        where
+             t1.is_delete=0
+        <if test="basicPerson != null">
+            <if test="basicPerson.id != null and basicPerson.id !=''">
+                and  t.id = #{basicPerson.id}
+            </if>
+            <if test="basicPerson.streetId != null and basicPerson.streetId !=''">
+                and t.street_id = #{basicPerson.streetId}
+            </if>
+            <if test="basicPerson.communityId != null and basicPerson.communityId !=''">
+                and t.community_id = #{basicPerson.communityId}
+            </if>
+            <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId !=''">
+                and t.owned_grid_id = #{basicPerson.ownedGridId}
+            </if>
+            <if test="basicPerson.personType != null and basicPerson.personType !=''">
+                and t.person_type = #{basicPerson.personType}
+            </if>
+            <if test="basicPerson.startDate != null and basicPerson.startDate !=''">
+                and t.create_time &gt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.endDate != null and basicPerson.endDate !=''">
+                and t.create_time &lt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.searchInfo != null and basicPerson.searchInfo !=''">
+              and(  t.name LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t.phone LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t.card_id LIKE CONCAT('%',#{basicPerson.searchInfo},'%'))
+            </if>
+        </if>
+        GROUP BY
+            t.id
+    </select>
+    <!--   联表分页查询人和房信息-->
+    <select id="selectInfoByMyWrapperWithPage" resultType="java.util.Map">
+        SELECT
+        t.id,
+        t.NAME,
+        t.sex,
+        t.phone,
+        t1.NAME AS nation,
+        t.birth_date,
+        t.card_id,
+        t3.NAME AS person_type,
+        t2.NAME AS political_face,
+        t.residence_address,
+        t.residential_address,
+        t.street_name,
+        t.community_name as community_name,
+        t.owned_grid as owned_grid,
+        t.owned_housing,
+        t.street_id,
+        t.community_id,
+        t.owned_grid_id,
+        t7.NAME AS special_population,
+        t.resident_grid,
+        t5.NAME AS relation_ship,
+        t.create_id,
+        t.create_time,
+        t6.NAME AS table_type_name,
+        t4.NAME AS acc_relation,
+        t.work_address,
+        t.occupation,
+        t8.NAME AS religious_belief,
+        t9.NAME AS marital_status,
+        t10.NAME AS military_service,
+        t.is_preferential_treatment,
+        t.is_lonely,
+        t.is_minimum_living,
+        t.serious_illness,
+        t.is_disabled,
+        t.disability_type,
+        t.disability_level,
+        t11.NAME AS party_relationship_managemen,
+        t.party_relationship_managemen_address,
+        t.is_delete,
+        ta3.province,
+        ta3.city,
+        ta3.county,
+        ta4.build_archive_name,
+        CONCAT( ta4.unit, '单元' ) AS unit,
+        CONCAT( ta4.floor, '层' ) AS floor,
+        CONCAT( ta4.door_number, '号' ) AS door_number,
+        ta4.host_name,
+        ta4.host_gender,
+        ta4.host_contact,
+        ta4.host_card,
+        ta4.host_permanent_address,
+        ta4.have_property,
+        tb1.NAME AS house_type,
+        tb2.NAME AS house_classification,
+        tb3.NAME AS house_nature,
+        ta4.host_current_address,
+        ta4.house_nature_describe,
+        ta4.house_name
+        FROM
+        basic_person t
+        LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData'
+        AND t1.number = t.nation
+        LEFT JOIN grid_dictionary t2 ON t2.field_name = 'politicalData'
+        AND t2.number = t.political_face
+        LEFT JOIN grid_dictionary t3 ON t3.field_name = 'personTypeData'
+        AND t3.number = t.person_type
+        LEFT JOIN grid_dictionary t4 ON t4.field_name = 'relationShipData'
+        AND t4.number = t.acc_relation
+        LEFT JOIN grid_dictionary t6 ON t6.field_name = 'tableTypeData'
+        AND t6.number = t.table_type
+        LEFT JOIN grid_dictionary t7 ON t7.field_name = 'specialPersonData'
+        AND t7.number = t.special_population
+        LEFT JOIN grid_dictionary t8 ON t8.field_name = 'religiousData'
+        AND t8.number = t.religious_belief
+        LEFT JOIN grid_dictionary t9 ON t9.field_name = 'maritalStatus'
+        AND t9.number = t.marital_status
+        LEFT JOIN grid_dictionary t10 ON t10.field_name = 'militaryService'
+        AND t10.number = t.military_service
+        LEFT JOIN grid_dictionary t11 ON t11.field_name = 'partyRelationshipManagemen'
+        AND t11.number = t.party_relationship_managemen
+        LEFT JOIN rela_person_house ta2 ON ta2.person_id = t.id
+        LEFT JOIN basic_housing ta4 ON ta2.house_id = ta4.id
+        LEFT JOIN basic_housing_estate ta3 ON ta3.id = ta4.house_id
+        LEFT JOIN grid_dictionary tb1 ON tb1.field_name = 'houseType'
+        AND tb1.number = ta4.house_type
+        LEFT JOIN grid_dictionary tb2 ON t2.field_name = 'houseClassification'
+        AND tb2.number = ta4.house_classification
+        LEFT JOIN grid_dictionary tb3 ON t3.field_name = 'houseNature'
+        AND tb3.number = ta4.house_nature
+        LEFT JOIN grid_dictionary t5 ON t5.field_name = 'relationShipData'
+        AND t5.number = ta2.relation_ship
+        where
+        t.is_delete=0
+        <if test="basicPerson != null">
+            <if test="basicPerson.id != null and basicPerson.id !=''">
+                and  t.id = #{basicPerson.id}
+            </if>
+            <if test="basicPerson.streetId != null and basicPerson.streetId !=''">
+                and t.street_id = #{basicPerson.streetId}
+            </if>
+            <if test="basicPerson.communityId != null and basicPerson.communityId !=''">
+                and t.community_id = #{basicPerson.communityId}
+            </if>
+            <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId !=''">
+                and t.owned_grid_id = #{basicPerson.ownedGridId}
+            </if>
+            <if test="basicPerson.personType != null and basicPerson.personType !=''">
+                and t.person_type = #{basicPerson.personType}
+            </if>
+            <if test="basicPerson.startDate != null and basicPerson.startDate !=''">
+                and t.create_time &gt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.endDate != null and basicPerson.endDate !=''">
+                and t.create_time &lt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.searchInfo != null and basicPerson.searchInfo !=''">
+                and(  t.name LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t.phone LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t.card_id LIKE CONCAT('%',#{basicPerson.searchInfo},'%'))
+            </if>
+        </if>
+        GROUP BY
+        t.id
+    </select>
+   <!--通过人口id查询绑定的第一套房屋信息-->
+    <select id="getOneHouseByPersonId" resultType="java.util.Map">
+        SELECT
+            ta2.person_id ,
+            ta3.province,
+            ta3.city,
+            ta3.county,
+            ta4.build_archive_name,
+            CONCAT( ta4.unit, '单元' ) AS unit,
+            CONCAT( ta4.floor, '层' ) AS floor,
+            CONCAT( ta4.door_number, '号' ) AS door_number,
+            ta4.host_name,
+            ta4.host_gender,
+            ta4.host_contact,
+            ta4.host_card,
+            ta4.host_permanent_address,
+            ta4.have_property,
+            tb1.NAME AS house_type,
+            tb2.NAME AS house_classification,
+            tb3.NAME AS house_nature,
+            ta4.host_current_address,
+            ta4.house_nature_describe,
+            ta4.house_name
+        FROM
+            rela_person_house ta2
+            LEFT JOIN basic_housing ta4 ON ta2.house_id = ta4.id and ta4.is_delete = 0
+            LEFT JOIN basic_housing_estate ta3 ON ta3.id = ta4.house_id and ta3.is_delete = 0
+            LEFT JOIN grid_dictionary tb1 ON tb1.field_name = 'houseType'
+            AND tb1.number = ta4.house_type
+            LEFT JOIN grid_dictionary tb2 ON tb2.field_name = 'houseClassification'
+            AND tb2.number = ta4.house_classification
+            LEFT JOIN grid_dictionary tb3 ON tb3.field_name = 'houseNature'
+            AND tb3.number = ta4.house_nature
+            LEFT JOIN grid_dictionary t5 ON t5.field_name = 'relationShipData'
+            AND t5.number = ta2.relation_ship
+
+        <if test="id != null and id != ''">
+            where  person_id = #{id}
+        </if>
+        GROUP BY
+        person_id
+    </select>
+<!--    查询所有人口的位置-->
+    <select id="getAllPersonPosition" resultType="me.zhengjie.entity.BasicPerson">
+       SELECT
+            t1.id,
+            t1.NAME,
+            t1.sex,
+            t1.birth_date,
+            t1.nation,
+            t1.card_id,
+            t1.person_type,
+            t1.political_face,
+            t1.residence_address,
+            t1.residential_address,
+            t1.street_id,
+            t1.street_name,
+            t1.community_id,
+            t1.community_name,
+            t1.owned_grid_id,
+            t1.owned_grid,
+            t1.owned_housing,
+            t1.building_archive_id,
+            t1.special_population,
+            t1.resident_grid,
+            t1.owned_houseId,
+            t1.housing_name,
+            t1.relation_ship,
+            t1.img_path,
+            t1.house_type,
+            t1.table_type,
+            t1.hobby,
+            t1.phone,
+            t1.is_bind,
+            t1.acc_number,
+            t1.acc_type,
+            t1.acc_name,
+            t1.acc_relation,
+            t1.acc_card,
+            t1.work_address,
+            t1.occupation,
+            t1.religious_belief,
+            t1.marital_status,
+            t1.military_service,
+            t1.is_preferential_treatment,
+            t1.is_lonely,
+            t1.is_minimum_living,
+            t1.serious_illness,
+            t1.is_disabled,
+            t1.disability_level,
+            t1.party_relationship_managemen,
+            t1.party_relationship_managemen_address,
+            t1.disability_type,
+            ta3.position AS position
+        FROM
+            basic_person t1
+            LEFT JOIN rela_person_house ta2 ON t1.id = ta2.person_id
+            LEFT JOIN basic_housing ta4 ON ta2.house_id = ta4.id
+            AND ta4.is_delete = 0
+            LEFT JOIN t_building_archives ta3 ON ta3.id = ta4.build_archive_id
+            AND ta3.is_delete = 0
+        where
+        t1.is_delete=0 and ta3.position is not null
+        <if test="basicPerson != null">
+            <if test="basicPerson.id != null and basicPerson.id !=''">
+                and  t1.id = #{basicPerson.id}
+            </if>
+            <if test="basicPerson.streetId != null and basicPerson.streetId !=''">
+                and t1.street_id = #{basicPerson.streetId}
+            </if>
+            <if test="basicPerson.communityId != null and basicPerson.communityId !=''">
+                and t1.community_id = #{basicPerson.communityId}
+            </if>
+            <if test="basicPerson.ownedGridId != null and basicPerson.ownedGridId !=''">
+                and t1.owned_grid_id = #{basicPerson.ownedGridId}
+            </if>
+            <if test="basicPerson.personType != null and basicPerson.personType !=''">
+                and t1.person_type = #{basicPerson.personType}
+            </if>
+            <if test="basicPerson.startDate != null and basicPerson.startDate !=''">
+                and t1.create_time &gt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.endDate != null and basicPerson.endDate !=''">
+                and t1.create_time &lt;= #{basicPerson.startDate}
+            </if>
+            <if test="basicPerson.searchInfo != null and basicPerson.searchInfo !=''">
+                and(  t1.name LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t1.phone LIKE CONCAT('%',#{basicPerson.searchInfo},'%')
+                or t1.card_id LIKE CONCAT('%',#{basicPerson.searchInfo},'%'))
+            </if>
+        </if>
+        GROUP BY
+            t1.id
+    </select>
+</mapper>

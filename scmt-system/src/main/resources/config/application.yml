@@ -1,0 +1,138 @@
+myProps: #自定义的属性和值
+  luzhoufangguanjuUrl: http://218.88.215.93:8014/lzwq/commodityContractInfo
+  naxiwangqianUrl: http://220.166.95.181:8000/api/FWHTQuery
+  isSms: false
+server:
+  tomcat:
+    max-http-post-size: -1
+  port: 9001
+#配置web页面入口
+magic-api:
+  web: /magic/web
+  swagger-config:
+    # 资源名称
+    name: 四川民图科技API
+    # 资源描述
+    description: 四川民图科技API v1.0 接口文档
+#    # 资源位置
+    location: /v2/api-docs/magic-api/swagger2.json
+    # 文档版本
+    version: 1.0
+    # 文档标题
+    title:  四川民图科技API v1.0 接口文档
+spring:
+  mvc:
+    static-path-pattern: /**
+
+  thymeleaf:
+    prefix: classpath*:/static/
+
+  resources:
+    static-locations: classpath*:/static/
+
+#  jms:
+#    pub-sub-domain: true
+#  activemq:
+#    broker-url: failover:tcp://192.168.1.10:61616
+#    in-memory: true
+#    pool:
+#      enabled: false
+#    packages:
+#      trust-all: true
+#    user: admin
+#    password: admin
+
+
+
+  freemarker:
+    check-template-location: false
+  profiles:
+    active: dev
+  jackson:
+    time-zone: GMT+8
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        ddl-auto: none
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    open-in-view: true
+  #activiti配置
+  activiti:
+    check-process-definitions: false
+    db-identity-used: true
+    # 自动生成Activiti相关表 第一次生成后建议关闭提高运行速度
+    database-schema-update: flase
+    # 保存历史数据级别设置为full最高级别，便于历史数据的追溯
+    history-level: full
+    #在流程引擎启动就激活AsyncExecutor,异步 true  false 关闭  （切记关闭）
+    async-executor-activate: false
+    xboot:
+      # 流程图字体 默认宋体
+      activityFontName: Microsoft YaHei
+      labelFontName: Microsoft YaHei
+task:
+  pool:
+    # 核心线程池大小
+    core-pool-size: 10
+    # 最大线程数
+    max-pool-size: 30
+    # 活跃时间
+    keep-alive-seconds: 60
+    # 队列容量
+    queue-capacity: 50
+
+#七牛云
+qiniu:
+  # 文件大小 /M
+  max-size: 15
+
+#邮箱验证码有效时间/分钟
+code:
+  expiration: 5
+
+#登录图形验证码有效时间/分钟
+loginCode:
+  expiration: 2
+
+#密码加密传输，前端公钥加密，后端私钥解密
+rsa:
+  private_key: MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEA0vfvyTdGJkdbHkB8mp0f3FE0GYP3AYPaJF7jUd1M0XxFSE2ceK3k2kw20YvQ09NJKk+OMjWQl9WitG9pB6tSCQIDAQABAkA2SimBrWC2/wvauBuYqjCFwLvYiRYqZKThUS3MZlebXJiLB+Ue/gUifAAKIg1avttUZsHBHrop4qfJCwAI0+YRAiEA+W3NK/RaXtnRqmoUUkb59zsZUBLpvZgQPfj1MhyHDz0CIQDYhsAhPJ3mgS64NbUZmGWuuNKp5coY2GIj/zYDMJp6vQIgUueLFXv/eZ1ekgz2Oi67MNCk5jeTF2BurZqNLR3MSmUCIFT3Q6uHMtsB9Eha4u7hS31tj1UWE+D+ADzp59MGnoftAiBeHT7gDMuqeJHPL4b+kC+gzV4FGTfhR9q3tTbklZkD2A==
+  publicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANL378k3RiZHWx5AfJqdH9xRNBmD9wGD2iRe41HdTNF8RUhNnHit5NpMNtGL0NPTSSpPjjI1kJfVorRvaQerUgkCAwEAAQ==
+# sm.ms 图床的 token
+smms:
+  token: 1oOP3ykFDI0K6ifmtvU7c8Y1eTWZSlyl
+
+
+#mybatis-plus配置
+mybatis-plus:
+  #MyBatis 配置文件位置
+  config-location: classpath:mapper/mybatis-config.xml
+  # 如果是放在resource目录 classpath:/mapper/*Mapper.xml
+  mapper-locations: classpath*:mapper/*Mapper.xml,classpath*:mapper/**/*Mapper.xml,classpath*:mapper/**/**/*Mapper.xml
+  # 实体扫描，多个package用逗号或者分号分隔
+  type-aliases-package: me.zhengjie.entity;me.zhengjie.*.entity;
+  global-config:
+    #刷新mapper 调试神器
+    refresh: true
+    # 数据库相关配置
+    db-config:
+      #主键类型  AUTO:"数据库ID自增", INPUT:"用户输入ID",ID_WORKER:"全局唯一ID (数字类型唯一ID)", UUID:"全局唯一ID UUID";
+      id-type: uuid
+      #字段策略 IGNORED:"忽略判断",NOT_NULL:"非 NULL 判断",NOT_EMPTY:"非空判断"
+      field-strategy: NOT_NULL
+      #逻辑删除配置
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      #数据库类型
+      db-type: oracle
+      #是否开启大写命名，默认不开启
+      capital-mode: false
+      #是否开启 LIKE 查询，即根据 entity 自动生成的 where 条件中 String 类型字段 是否使用 LIKE，默认不开启
+      column-like: false

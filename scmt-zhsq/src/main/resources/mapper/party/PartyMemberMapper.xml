@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyMemberMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.party.PartyMember">
+		<result column="id" property="id" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="is_deleted" property="isDeleted" />
+		<result column="name" property="name" />
+		<result column="id_card_no" property="idCardNo" />
+		<result column="gender" property="gender" />
+		<result column="nation" property="nation" />
+		<result column="native_place" property="nativePlace" />
+		<result column="party_category_id" property="partyCategoryId" />
+		<result column="party_category_name"
+			property="partyCategoryName" />
+		<result column="party_date" property="partyDate" />
+		<result column="birthday" property="birthday" />
+		<result column="education" property="education" />
+		<result column="party_committee_id" property="partyCommitteeId" />
+		<result column="party_committee_name"
+			property="partyCommitteeName" />
+		<result column="party_branch_id" property="partyBranchId" />
+		<result column="party_branch_name" property="partyBranchName" />
+		<result column="phone_number" property="phoneNumber" />
+		<result column="unit_address" property="unitAddress" />
+		<result column="residential_address"
+			property="residentialAddress" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id,
+		create_user,
+		create_time,
+		update_user,
+		update_time,
+		status,
+		is_deleted,
+		name, id_card_no, gender, nation, native_place,
+		party_category_id,
+		party_category_name, party_date, birthday,
+		education,
+		party_committee_id, party_committee_name, party_branch_id,
+		party_branch_name, phone_number, unit_address, residential_address
+	</sql>
+
+
+	<select id="getPartyMemberAgeInfo"
+		resultType="me.zhengjie.dto.PartyMemberAgeInfoDto">
+		SELECT YEAR
+		(from_days(datediff(now(), birthday))) AS age,
+		gender
+		FROM
+		party_member
+		WHERE
+		party_committee_id = #{partyCommitteeId}
+		AND
+		party_branch_id=#{partBranchId}
+	</select>
+
+	<select id="partyCategoriesAnalysis"
+		resultType="me.zhengjie.dto.StatisticalAnalysisDto">
+		SELECT party_category_name AS name,COUNT(1) AS num
+		FROM party_member
+		<where>
+			<if test="partyCommitteeId !=null and partyCommitteeId !=0">
+				and party_committee_id=#{partyCommitteeId}
+			</if>
+			<if test="partBranchId !=null and partBranchId !=0">
+				and party_branch_id=#{partBranchId}
+			</if>
+		</where>
+		GROUP BY party_category_name
+	</select>
+
+
+	<select id="gridPartyanalysis"
+		resultType="me.zhengjie.dto.StatisticalAnalysisDto">
+		SELECT party_branch_name AS name,COUNT(1) AS num
+		FROM party_member
+		<where>
+			<if test="partyCommitteeId !=null and partyCommitteeId !=0">
+				and party_committee_id=#{partyCommitteeId}
+			</if>
+		</where>
+		GROUP BY party_branch_name
+	</select>
+
+
+
+	<select id="getPartyMemberStatisticsAge"
+		resultType="me.zhengjie.dto.PartyMemberAgeInfoDto">
+		SELECT YEAR
+		(from_days(datediff(now(), birthday))) AS age,
+		gender
+		FROM
+		party_member
+		WHERE 1=1
+		<if test="partyCommitteeIds!=null and partyCommitteeIds.size()>0">
+			AND party_committee_id in
+			<foreach collection="partyCommitteeIds" index="i" item="id"
+				open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+	</select>
+
+
+
+
+
+	<select id="getReportPartyMemberDistribute"
+		resultType="me.zhengjie.dto.ReportPartyMemberDistribute">
+
+		SELECT
+		community_name as communityName,
+		count(*) as count
+		FROM
+		( SELECT
+		party_committee.community_name, party_member.*
+		FROM party_committee
+		LEFT JOIN party_member
+		ON party_committee.community_id = party_member.party_committee_id
+		) AS a
+
+		GROUP BY a.community_name
+
+	</select>
+
+
+
+	<select id="getReportPartyInOut"
+		resultType="me.zhengjie.dto.ReportPartyInOut">
+		SELECT
+			count(
+			IF
+			( is_into = 1, TRUE, NULL )) AS partyInNumber,
+			count(
+			IF
+			( is_into = 2, TRUE, NULL )) AS partyOutNumber,
+			DATE_FORMAT( into_time, '%Y-%m' ) date 
+		FROM
+			party_member 
+		WHERE
+			is_into != 0 
+		<if test="partyCommitteeIds!=null and partyCommitteeIds.size()>0">
+			and party_committee_id in
+			<foreach collection="partyCommitteeIds" index="i" item="id"
+				open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+		GROUP BY
+		date
+	</select>
+
+
+</mapper>

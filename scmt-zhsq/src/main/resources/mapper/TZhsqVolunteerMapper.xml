@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqVolunteerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqVolunteer">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="nation" property="nation" />
+        <result column="person_id" property="personId" />
+        <result column="id_card" property="idCard" />
+        <result column="phone" property="phone" />
+        <result column="street" property="street" />
+        <result column="community" property="community" />
+        <result column="owned_grid" property="ownedGrid" />
+        <result column="house_id" property="houseId" />
+        <result column="home_address" property="homeAddress" />
+        <result column="is_party_member" property="isPartyMember" />
+        <result column="state" property="state" />
+        <result column="position" property="position" />
+        <result column="order_number" property="orderNumber" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="rejection_reasons" property="rejectionReasons" />
+        <result column="remark" property="remark" />
+        <result column="religious_belief" property="religiousBelief" />
+        <result column="education" property="education" />
+        <result column="img_path" property="imgPath" />
+        <result column="work_address" property="workAddress" />
+        <result column="marital_status" property="maritalStatus" />
+        <result column="name_used_before" property="nameUsedBefore" />
+        <result column="native_place" property="nativePlace" />
+        <result column="application_time" property="applicationTime" />
+        <result column="owned_grid_name" property="ownedGridName" />
+        <result column="street_id" property="streetId" />
+        <result column="community_id" property="communityId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, sex, nation, person_id, id_card, phone, street, community, owned_grid, house_id, home_address, is_party_member, state, position, order_number, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time, rejection_reasons, remark, religious_belief, education, img_path, work_address, marital_status, name_used_before, native_place, application_time, owned_grid_name, street_id, community_id
+    </sql>
+
+    <select id="selectByCommunityAndGrid" resultType="int">
+       select count(*) from  t_zhsq_volunteer
+       <where>
+           is_delete = 0
+           <if test="communityId != null and communityId != ''">
+               and community_id = #{communityId}
+           </if>
+           <if test="gridId != null and gridId != ''">
+               and owned_grid = #{gridId}
+           </if>
+       </where>
+    </select>
+
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.TZhsqVolunteer">
+       SELECT
+            t.id,
+            t.NAME,
+            t.sex,
+            t1.NAME as nation,
+            t.person_id,
+            t.id_card,
+            t.phone,
+            t.street,
+            t.community,
+            t.owned_grid,
+            t.house_id,
+            t.home_address,
+            t.is_party_member,
+            t.state,
+            t.position,
+            t.order_number,
+            t.is_delete,
+            t.create_id,
+            t.create_time,
+            t.update_id,
+            t.update_time,
+            t.delete_id,
+            t.delete_time,
+            t.rejection_reasons,
+            t.remark,
+            t.religious_belief,
+            t.education,
+            t.img_path,
+            t.work_address,
+            t.marital_status,
+            t.name_used_before,
+            t.native_place,
+            t.application_time,
+            t.owned_grid_name,
+            t.street_id,
+            t.community_id
+        FROM
+            t_zhsq_volunteer t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'nationData' AND t1.number = t.nation
+             ${ew.customSqlSegment}
+    </select>
+
+</mapper>

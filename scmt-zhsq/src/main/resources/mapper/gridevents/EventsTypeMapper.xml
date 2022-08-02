@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.gridevents.EventsTypeMapper">
+
+    <select id="loadAllByQuery" resultType="me.zhengjie.entity.gridevents.EventsType">
+      select *
+      from  grid_events_type where is_deleted !=1
+
+          <if test="query.queryStr != null and query.queryStr != ''">
+              AND name like CONCAT('%',#{query.queryStr},'%')
+          </if>
+
+    </select>
+
+    <select id="loadByPage" resultType="me.zhengjie.entity.gridevents.EventsType">
+        select *,pd.name parentName,d.name label
+        from  grid_events_type d
+        LEFT JOIN grid_events_type pd ON pd.id = d.pid
+        <where>
+            d.pid = '0'
+            <if test="query.name != null and query.name != ''">
+                AND d.name like CONCAT('%',#{query.name,jdbcType=VARCHAR},'%')
+            </if>
+            and d.is_deleted !=1
+        </where>
+    </select>
+
+    <select id="loadNotPage" resultType="me.zhengjie.entity.gridevents.EventsType">
+        select *,pd.name parentName,d.name label
+        from  grid_events_type d
+        LEFT JOIN grid_events_type pd ON pd.id = d.pid
+        <where>
+            d.pid = '0'
+            <if test="query.name != null and query.name != ''">
+                AND d.name like CONCAT('%',#{query.name,jdbcType=VARCHAR},'%')
+            </if>
+            and d.is_deleted !=1
+        </where>
+    </select>
+
+    <select id="selectTreeByParentId" resultType="me.zhengjie.entity.gridevents.EventsType">
+        select *,pd.name parentName,d.name label
+        from  grid_events_type d
+        LEFT JOIN grid_events_type pd ON pd.id = d.pid
+        <where>
+            <if test="parentId != null and parentId != ''">
+                AND d.pid = #{parentId}
+            </if>
+            and d.is_deleted !=1
+        </where>
+    </select>
+
+</mapper>

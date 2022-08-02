@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyMassessEnrollMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.party.PartyMassessEnroll">
+    <result column="id" property="id" />
+    <result column="create_time" property="createTime" />
+        <result column="party_masses_id" property="partyMassesId" />
+        <result column="user_id" property="userId" />
+        <result column="phone_number" property="phoneNumber" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        create_time,
+        party_masses_id, user_id, phone_number
+    </sql>
+    
+    
+    <select id="pushcrowdAnalysis"
+		resultType="me.zhengjie.dto.StatisticalAnalysisDto">
+        SELECT  party_category_name AS name,COUNT(distinct(user_id)) AS num 
+        FROM party_massess_enroll
+        <where>
+         <if test="partyCommitteeId !=null and partyCommitteeId !=0">
+             and party_committee_id=#{partyCommitteeId}
+         </if>
+           <if test="partyBranchId !=null and partyBranchId !=0">
+             and party_branch_id=#{partyBranchId}
+         </if>
+        </where>
+        GROUP BY party_category_name 
+	</select>
+    
+    
+    
+
+</mapper>

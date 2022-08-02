@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicUnitMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicUnit">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="build_archive_id" property="buildArchiveId" />
+        <result column="floor_number" property="floorNumber" />
+        <result column="households_number" property="householdsNumber" />
+        <result column="remark" property="remark" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, build_archive_id, floor_number, households_number, remark, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+
+    <select id="queryBasicUnitListByArchiveId" resultType="me.zhengjie.entity.BasicUnit">
+        select * from basic_unit where build_archive_id = #{archiveId}  and is_delete=0 ORDER BY create_time ASC,name ASC
+    </select>
+
+    <!--  获取最大单元数-->
+    <select id="getMaxUnit" resultType="map">
+        select max(name) as unitMax from basic_unit where build_archive_id = #{id} and is_delete=0
+    </select>
+
+    <!--  获取单元中的层数和房间数-->
+    <select id="getFloorAndDoor" resultType="map">
+        select floor_number as floorMax , households_number as doorMax from basic_unit where build_archive_id = #{id} and name = #{name} and is_delete=0
+    </select>
+</mapper>

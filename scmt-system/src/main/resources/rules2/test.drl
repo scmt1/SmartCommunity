@@ -1,0 +1,35 @@
+// 以下规则为标准化厂房
+package me.zhengjie.drools.drools
+
+rule "bzhcf1"
+when
+    message :Message(fcType == 41 && htsj >= "01-03-2020" && htsj <= "31-08-2020")
+then
+    message.setResultMoney((message.getMoney() * 0.03));
+    message.setResultType("3%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第一条规则补助 3%  补助金额为：" + message.getResultMoney());
+end
+
+rule "bzhcf2"
+when
+    message :Message(fcType == 41 && htsj >= "01-09-2020" && htsj <= "28-02-2021")
+then
+    message.setResultMoney((message.getMoney() * 0.02));
+    message.setResultType("2%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第二条规则补助 2%  补助金额为：" + message.getResultMoney());
+end
+
+rule "bzhcf3"
+when
+    message :Message(fcType == 41 && htsj >= "01-03-2021" && htsj <= "28-02-2022")
+then
+    message.setResultMoney((message.getMoney() * 0.01));
+    message.setResultType("1%");
+    message.setStatus(1);
+    update(message);
+    System.out.println("第三条规则补助 1%  补助金额为：" + message.getResultMoney());
+end

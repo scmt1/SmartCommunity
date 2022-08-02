@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.RelaPersonHouseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.RelaPersonHouse">
+        <id column="id" property="id" />
+        <result column="person_id" property="personId" />
+        <result column="house_id" property="houseId" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="relation_ship" property="relationShip" />
+        <result column="is_settle" property="isSettle" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, person_id, house_id, create_id, create_time, update_id, update_time,relation_ship,is_settle
+    </sql>
+
+    <select id="getRelaPersonHouseByPid" resultType="me.zhengjie.entity.BasicHousing">
+        select rp.relation_ship,bh.* from rela_person_house rp LEFT JOIN basic_housing bh on bh.id = rp.house_id where rp.house_id=#{pid}
+    </select>
+
+    <select id="getRelaByHouseId" resultType="me.zhengjie.entity.RelaPersonHouse">
+        select * from rela_person_house where house_id = #{houseId}
+    </select>
+
+    <select id="getToponeHouseId" resultType="me.zhengjie.entity.RelaPersonHouse">
+       SELECT * FROM rela_person_house WHERE person_id = #{id} LIMIT 0,1
+    </select>
+</mapper>

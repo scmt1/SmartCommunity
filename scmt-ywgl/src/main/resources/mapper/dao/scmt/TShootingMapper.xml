@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.dao.mapper.TShootingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.dao.entity.TShooting">
+        <id column="id" property="id" />
+        <result column="level" property="level" />
+        <result column="type" property="type" />
+        <result column="name" property="name" />
+        <result column="state" property="state" />
+        <result column="position" property="position" />
+        <result column="description" property="description" />
+        <result column="address" property="address" />
+        <result column="dep_id" property="depId" />
+        <result column="dep_name" property="depName" />
+        <result column="risk_level" property="riskLevel" />
+        <result column="may_cause" property="mayCause" />
+        <result column="img_path" property="imgPath" />
+        <result column="video_path" property="videoPath" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, level, type, name, state, position, description, address, dep_id, dep_name, risk_level, may_cause,img_path,video_path, remark, create_time, create_id, update_time, update_id, delete_id, delete_time
+    </sql>
+
+</mapper>

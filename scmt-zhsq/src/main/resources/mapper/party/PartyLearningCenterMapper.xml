@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyLearningCenterMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.party.PartyLearningCenter">
+    <result column="id" property="id" />
+    <result column="create_user" property="createUser" />
+    <result column="create_time" property="createTime" />
+    <result column="update_user" property="updateUser" />
+    <result column="update_time" property="updateTime" />
+    <result column="status" property="status" />
+    <result column="is_deleted" property="isDeleted" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        create_user,
+        create_time,
+        update_user,
+        update_time,
+        status,
+        is_deleted,
+        title, content, remark
+    </sql>
+    
+   <select id="getLearnCenterList" resultType="me.zhengjie.dto.PartyLearningCenterDto">
+	SELECT
+		plc.id AS id,
+		plc.title AS title,
+		plc.create_time AS createTime,
+	IF
+		( a1.learn_center_id IS NULL, 0, 1 ) AS isLearn 
+	FROM
+		`party_learning_center` AS plc
+		LEFT JOIN ( SELECT learn_center_id FROM `party_learn_center_enroll` WHERE user_id = #{userId} ) AS a1 ON a1.learn_center_id = plc.`id` 
+	WHERE
+		plc.`is_deleted` = 0 Order By createTime Desc
+   </select>
+
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicHealthFileMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicHealthFile">
+        <result column="id" property="id"/>
+        <result column="person_id" property="personId"/>
+        <result column="height" property="height"/>
+        <result column="body_weight" property="bodyWeight"/>
+        <result column="blood_type" property="bloodType"/>
+        <result column="waistline" property="waistline"/>
+        <result column="vision" property="vision"/>
+        <result column="blood_pressure" property="bloodPressure"/>
+        <result column="allergies" property="allergies"/>
+        <result column="remark" property="remark"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="delete_id" property="deleteId"/>
+        <result column="delete_time" property="deleteTime"/>
+        <result column="create_id" property="createId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_id" property="updateId"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,person_id,height,body_weight,blood_type,waistline,vision,blood_pressure,allergies,remark,is_delete,delete_time,create_id,create_time,update_id,update_time
+    </sql>
+
+    <select id="getTopOne" resultType="me.zhengjie.entity.BasicHealthFile">
+        SELECT * FROM basic_health_file WHERE person_id = #{personId} and is_delete=0 ORDER BY create_time DESC LIMIT 0, 1
+    </select>
+
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>eladmin</artifactId>
+		<groupId>me.zhengjie</groupId>
+		<version>2.5-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<version>2.5-SNAPSHOT</version>
+	<artifactId>scmt-magic-api</artifactId>
+	<name>magic-api</name>
+	<dependencies>
+		<!-- 以spring-boot-starter的方式引用 -->
+		<dependency>
+			<groupId>org.ssssssss</groupId>
+			<artifactId>magic-api-spring-boot-starter</artifactId>
+			<version>0.6.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.ssssssss</groupId>
+					<artifactId>magic-editor</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+    </dependencies>
+</project>

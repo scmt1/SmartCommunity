@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqBottomToolMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqBottomTool">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="pid" property="pid" />
+        <result column="icon" property="icon" />
+        <result column="color" property="color" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="gridding_id" property="griddingId" />
+        <result column="level" property="level" />
+        <result column="is_delete" property="isDelete" />
+        <result column="remark" property="remark" />
+        <result column="type_id" property="typeId" />
+        <result column="type_name" property="typeName" />
+        <result column="gridding_name" property="griddingName" />
+        <result column="url" property="url" />
+        <result column="parameter" property="parameter" />
+        <result column="source_id" property="sourceId" />
+        <result column="source_name" property="sourceName" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name,url,parameter, pid,icon,source_id,source_name, color, create_id, create_time, update_id, update_time, delete_id, delete_time, gridding_id, level, is_delete, remark, type_id, type_name, gridding_name
+    </sql>
+
+</mapper>

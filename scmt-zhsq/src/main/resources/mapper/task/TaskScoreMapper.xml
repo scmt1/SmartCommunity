@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.task.TaskScoreMapper">
+    <select id="selectByQuery" resultType="java.util.Map" parameterType="com.alibaba.fastjson.JSONObject">
+        select
+        tc.id,
+        tc.name,
+        tc.count_score countScore,
+        concat('工单及时率(', CONVERT((if(tts.grab_order_first_status = 1, tts.grab_order_first_score, 0) +
+        if(tts.grab_order_first_status = 1,0,if(tts.grab_order_last_status = 1, tts.grab_order_last_score, 0))+
+        if(tts.complete_order_status = 1, tts.complete_order_score, 0)),char), '分)', '+工单完成度(',
+        CONVERT(sum(tsd.score),char), '分)') scoringStandard
+        from (select * from task_category where grid_id = #{query.gridId}) tc
+        left join task_timely_score tts on tts.grid_id = tc.grid_id
+        left join task_score_details tsd on tsd.master_id = tc.id
+        <if test="query.queryStr != null and query.queryStr != ''">
+            where tc.name LIKE CONCAT('%',#{query.queryStr},'%')
+        </if>
+        group by tc.id, tc.name, tc.count_score,tts.grab_order_first_status,tts.grab_order_first_score,
+        tts.grab_order_last_status,tts.grab_order_last_score,tts.complete_order_status,tts.complete_order_score
+    </select>
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyDuesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.party.PartyDues">
+    <result column="id" property="id" />
+    <result column="create_user" property="createUser" />
+    <result column="create_time" property="createTime" />
+    <result column="update_user" property="updateUser" />
+    <result column="update_time" property="updateTime" />
+    <result column="status" property="status" />
+    <result column="is_deleted" property="isDeleted" />
+        <result column="party_member_id" property="partyMemberId" />
+        <result column="pay_date" property="payDate" />
+        <result column="amount" property="amount" />
+        <result column="quarter" property="quarter" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        create_user,
+        create_time,
+        update_user,
+        update_time,
+        status,
+        is_deleted,
+        party_member_id, pay_date, amount, quarter, remark
+    </sql>
+
+ <select id="partyPaymentAnalysis"
+		resultType="me.zhengjie.dto.StatisticalAnalysisDto">
+        SELECT  party_category_name AS name,COUNT(distinct(party_member_id)) AS num 
+        FROM party_dues where is_deleted=0
+	         <if test="partyCommitteeId !=null and partyCommitteeId !=0">
+	             and party_committee_id=#{partyCommitteeId}
+	         </if>
+	         <if test="partyBranchId !=null and partyBranchId !=0">
+	             and party_branch_id=#{partyBranchId}
+	         </if>
+	         <if test="time !=null and time!=''">
+	             and DATE_FORMAT(pay_date,'%Y-%m')=#{time}
+	         </if>
+        GROUP BY party_category_name 
+	</select>
+
+
+</mapper>

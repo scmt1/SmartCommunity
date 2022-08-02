@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="me.zhengjie.mapper.party.PartyInOutApplyMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.party.PartyInOutApply">
+		<result column="id" property="id" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="is_deleted" property="isDeleted" />
+		<result column="name" property="name" />
+		<result column="id_card_no" property="idCardNo" />
+		<result column="gender" property="gender" />
+		<result column="phone_number" property="phoneNumber" />
+		<result column="nation" property="nation" />
+		<result column="native_place" property="nativePlace" />
+		<result column="head_sculpture" property="headSculpture" />
+		<result column="party_category_id" property="partyCategoryId" />
+		<result column="party_category_name"
+			property="partyCategoryName" />
+		<result column="education_id" property="educationId" />
+		<result column="education_name" property="educationName" />
+		<result column="party_date" property="partyDate" />
+		<result column="birthday" property="birthday" />
+		<result column="unit_address" property="unitAddress" />
+		<result column="residential_address"
+			property="residentialAddress" />
+		<result column="organization_info" property="organizationInfo" />
+		<result column="apply_type" property="applyType" />
+		<result column="apply_status" property="applyStatus" />
+		<result column="reject_reason" property="rejectReason" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id,
+		create_user,
+		create_time,
+		update_user,
+		update_time,
+		status,
+		is_deleted,
+		name, id_card_no, gender, phone_number, nation, native_place,
+		head_sculpture, party_category_id, party_category_name, education_id,
+		education_name, party_date, birthday, unit_address,
+		residential_address, organization_info, apply_type, apply_status,
+		reject_reason
+	</sql>
+
+
+
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TArmedequipmentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TArmedequipment">
+        <id column="id" property="id" />
+        <id column="equipment_name" property="equipmentName" />
+        <id column="equipment_type" property="equipmentType" />
+        <id column="equipment_number" property="equipmentNumber" />
+        <id column="position" property="position" />
+        <id column="place_name" property="placeName" />
+        <id column="is_delete" property="isDelete" />
+        <id column="create_id" property="createId" />
+        <id column="create_time" property="createTime" />
+        <id column="update_id" property="updateId" />
+        <id column="update_time" property="updateTime" />
+        <id column="delete_id" property="deleteId" />
+        <id column="delete_time" property="deleteTime" />
+        <id column="is_label" property="isLabel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="TArmedequipment">
+        id, equipmentName, equipmentType, equipment_number, position, place_name, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time, is_label
+    </sql>
+
+    <select id="selectTArmedequipmentPageList" resultType="me.zhengjie.entity.TArmedequipment">
+        SELECT t_armedEquipment.*, t1.label as equipmentTypeName
+        FROM t_armedEquipment
+        left JOIN dict_detail t1 ON  t_armedEquipment.equipment_type = t1.value and t1.dict_id = 122
+	    ${ew.customSqlSegment}
+    </select>
+
+</mapper>

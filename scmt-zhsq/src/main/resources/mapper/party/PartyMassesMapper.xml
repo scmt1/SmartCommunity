@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.party.PartyMassesMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.party.PartyMasses">
+		<result column="id" property="id" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="is_deleted" property="isDeleted" />
+		<result column="title" property="title" />
+		<result column="party_category_id" property="partyCategoryId" />
+		<result column="party_category_name"
+			property="partyCategoryName" />
+		<result column="party_committee_id" property="partyCommitteeId" />
+		<result column="party_committee_name"
+			property="partyCommitteeName" />
+		<result column="party_branch_id" property="partyBranchId" />
+		<result column="party_branch_name" property="partyBranchName" />
+		<result column="activity_date" property="activityDate" />
+		<result column="content" property="content" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id,
+		create_user,
+		create_time,
+		update_user,
+		update_time,
+		status,
+		is_deleted,
+		title, party_category_id, party_category_name,
+		party_committee_id,
+		party_committee_name, party_branch_id,
+		party_branch_name,
+		activity_date, content
+	</sql>
+	
+	
+<!-- 		<select id="getpartyMassesStatistics"
+		resultType="me.zhengjie.dto.ReportPartyMasses">
+		SELECT
+		party_committee_name AS partyCommitteeName,
+		count( 1 ) AS count
+		FROM
+		party_masses
+		WHERE party_committee_id in
+		<foreach collection="partyCommitteeIds" index="i" item="id" open="("
+			separator="," close=")">
+			#{id}
+		</foreach>
+		GROUP BY
+		partyCommitteeName
+
+	</select> -->
+	
+	
+	<select id="getpartyMassesStatistics"
+		resultType="me.zhengjie.dto.ReportPartyMasses">
+	SELECT
+	community_name as communityName,
+	count(*) as count
+FROM
+	( SELECT party_committee.community_name, party_masses.* 
+	FROM party_committee LEFT JOIN party_masses ON party_committee.community_id = party_masses.party_committee_id ) AS a 
+GROUP BY
+	a.community_name
+
+	</select>
+	
+	
+	
+
+	<select id="getPartyMassessList" resultType="me.zhengjie.dto.AppPartyMassessListDto">
+		SELECT
+	pm.id AS id,
+	pm.title AS title,
+	pm.activity_date AS activityDate,
+	pm.masses_status AS massesStatus,
+IF
+	( a1.party_masses_id IS NULL, 0, 1 ) AS isEnroll 
+FROM
+	party_masses AS pm
+	LEFT JOIN (
+	SELECT
+		party_masses_id 
+	FROM
+		party_massess_enroll 
+	WHERE
+		user_id = #{userId}
+		
+		) AS a1
+		ON a1.party_masses_id = pm.id 
+	WHERE
+		pm.`is_deleted` = 0 AND party_committee_id=#{partyCommitteeId} AND party_category_id=#{partyCategoryId}
+		AND (
+			party_branch_id = #{partyBranchId} or party_branch_id=0)
+			
+	ORDER BY
+	pm.create_time DESC
+	</select>
+</mapper>

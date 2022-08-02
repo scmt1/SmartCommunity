@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="me.zhengjie.mapper.party.PartyCommitteeMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.party.PartyCommittee">
+		<result column="id" property="id" />
+		<result column="create_user" property="createUser" />
+		<result column="create_time" property="createTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="is_deleted" property="isDeleted" />
+		<result column="name" property="name" />
+		<result column="jurisdiction_id" property="jurisdictionId" />
+		<result column="address" property="address" />
+		<result column="phone_number" property="phoneNumber" />
+		<result column="secretary" property="secretary" />
+		<result column="gender" property="gender" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id,
+		create_user,
+		create_time,
+		update_user,
+		update_time,
+		status,
+		is_deleted,
+		name, jurisdiction_id, address, phone_number, secretary,
+		gender
+	</sql>
+
+
+
+	<resultMap id="CommiteeListMap"
+		type="me.zhengjie.dto.PartyCommitteeDto">
+		<result column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="secretary" property="secretary" />
+		<result column="jurisdictionId" property="jurisdictionId" />
+		<result column="jurisdiction" property="jurisdiction" />
+		<result column="address" property="address" />
+		<result column="phoneNumber" property="phoneNumber" />
+		<result column="gender" property="gender" />
+	</resultMap>
+
+
+
+	
+	
+	
+		<select id="getReportPartyOrganization"
+		resultType="me.zhengjie.dto.ReportPartyOrganization">
+		SELECT
+		community_name AS communityName,
+		count( 1 ) AS count
+		FROM
+		party_committee
+		GROUP BY
+		communityName
+
+	</select>
+	
+
+	<select id="getList" resultMap="CommiteeListMap">
+		SELECT
+		commitee.id as id,
+		commitee.name as name,
+		commitee.secretary as
+		secretary,
+		commitee.jurisdiction_id as jurisdictionId,
+		ju.name as
+		jurisdiction,
+		commitee.phone_number as phoneNumber,
+		commitee.gender as
+		gender,
+		commitee.address as address
+		FROM
+		party_committee commitee
+		LEFT
+		JOIN party_jurisdiction ju ON
+		commitee.jurisdiction_id =ju.id
+		<where>
+			<if test="name!=''">
+				commitee.name= like concat('%',#{name},'%')
+			</if>
+			<if test="jurisdictionId!=null">
+				commitee.jurisdiction_id= #{jurisdictionId}
+			</if>
+
+			<if test="secretary!=''">
+				commitee.secretary= like concat('%',#{secretary},'%')
+			</if>
+
+			<if test="phoneNumber!=''">
+				commitee.phoneNumber= like concat('%',#{phoneNumber},'%')
+			</if>
+		</where>
+
+	</select>
+</mapper>

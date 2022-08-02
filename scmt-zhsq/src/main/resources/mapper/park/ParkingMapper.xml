@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.park.ParkingMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="me.zhengjie.entity.park.Parking">
+		<id column="id" property="id" />
+		<result column="parking_name" property="parkingName" />
+		<result column="address" property="address" />
+		<result column="grid_id" property="gridId" />
+		<result column="grid_name" property="gridName" />
+		<result column="longitude" property="longitude" />
+		<result column="latitude" property="latitude" />
+		<result column="remark" property="remark" />
+		<result column="is_deleted" property="isDeleted" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, parking_name, address, grid_id, grid_name, longitude,
+		latitude,
+		remark, is_deleted, create_time, update_time
+	</sql>
+
+	<select id="getByParkingName"
+		resultType="me.zhengjie.entity.park.SearchParking">
+		SELECT
+		parking.id as parkingId,
+		parking.parking_name as parkingName,
+		parking.address as address,
+		parking.latitude as latitude,
+		parking.longitude as longitude,
+		parking.region as longitudeAndLatitude,
+		ROUND(
+		6378.138 * 2 * ASIN(
+		SQRT(
+		POW( SIN( ( #{latitude} * PI() / 180 -
+		latitude * PI() / 180 ) / 2 ), 2 )
+		+ COS( #{latitude} * PI() / 180 ) *
+		COS(latitude * PI() / 180 ) * POW(
+		SIN( ( #{longitude} * PI() / 180 -
+		longitude * PI() / 180 ) / 2 ), 2 )
+		)
+		),2)
+		AS distance
+		FROM
+		parking WHERE
+		is_deleted=0
+		<if test="parkingName!=null and parkingName!=''">
+			AND parking_name like '%${parkingName}%'
+		</if>
+		ORDER BY
+		distance
+	</select>
+
+	<select id="getCommunityParking"
+		resultType="me.zhengjie.entity.park.CommunityParking">
+		SELECT
+		parking.community_name AS communityName,
+		parking.community_id AS communityId,
+		COUNT(*) AS numberOfParkingSpace,
+		COUNT(CASE WHEN parking_device.parking_status = '2' THEN 0 END ) AS
+		numberOfFreeParkingSpace
+		FROM
+		parking_device
+		LEFT JOIN parking ON
+		parking_device.parking_id = parking.id
+		WHERE 1=1
+		<if test="gridId!=null and gridId!=''">
+			AND parking.grid_id=#{gridId}
+		</if>
+		GROUP BY
+		communityName,
+		communityId
+	</select>
+    <select id="getPropertyUuids" resultType="java.lang.String">
+		SELECT GROUP_CONCAT(DISTINCT id) FROM basic_housing_estate
+		 WHERE grid_id =#{gridId}
+	</select>
+</mapper>

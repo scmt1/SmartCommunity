@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicHousingEstateMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicHousingEstate">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="address" property="address" />
+        <result column="property_name" property="propertyName" />
+        <result column="property_name_id" property="propertyNameId" />
+        <result column="property_type" property="propertyType" />
+        <result column="property_person" property="propertyPerson" />
+        <result column="property_phone" property="propertyPhone" />
+        <result column="community" property="community" />
+        <result column="grid" property="grid" />
+        <result column="location" property="location" />
+        <result column="is_delete" property="isDelete" />
+        <result column="street" property="street" />
+        <result column="street_number" property="streetNumber" />
+        <result column="bak3" property="bak3" />
+        <result column="bak4" property="bak4" />
+        <result column="bak5" property="bak5" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="user_name" property="userName" />
+        <result column="password" property="password" />
+        <result column="recognition_face_id" property="recognitionFaceId" />
+        <result column="province" property="province" />
+        <result column="city" property="city" />
+        <result column="county" property="county" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, address, property_name_id, property_name, property_type, property_person, property_phone, community_id, community, grid, grid_id, location, is_delete, street_id, street, street_number, bak3, bak4, bak5, remark, create_time, create_id, update_time, update_id, delete_id, delete_time, user_name, password, recognition_face_id, province, city, county
+    </sql>
+    <!--根据街道名查询街道id-->
+    <select id="getStreetId" resultType="String">
+        select street_id from basic_housing_estate where street = #{street} and is_delete=0 GROUP BY street_id
+    </select>
+
+    <!--根据社区名查询社区id-->
+    <select id="getCommunityId" resultType="String">
+        select community_id from basic_housing_estate where community = #{community} and is_delete=0 GROUP BY community_id
+    </select>
+
+    <!--根据网格名查询网格id-->
+    <select id="getGridId" resultType="String">
+        select grid_id from basic_housing_estate where grid = #{grid} and is_delete=0 GROUP BY grid_id
+    </select>
+    <!--    通过wapper 联表查询-->
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.BasicHousingEstate">
+       SELECT
+            t.id,
+            t.NAME,
+            t.address,
+            t.property_name,
+            t1.Name as property_type,
+            t.property_person,
+            t.property_phone,
+            t.community,
+            t.grid,
+            t.location,
+            t.is_delete,
+            t.street,
+            t.street_number,
+            t.bak3,
+            t.bak4,
+            t.bak5,
+            t.remark,
+            t.create_time,
+            t.create_id,
+            t.update_time,
+            t.update_id,
+            t.delete_id,
+            t.delete_time,
+            t.property_name_id
+        FROM
+            basic_housing_estate t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'communityPriorityData' AND t1.number = t.property_type
+             ${ew.customSqlSegment}
+    </select>
+</mapper>

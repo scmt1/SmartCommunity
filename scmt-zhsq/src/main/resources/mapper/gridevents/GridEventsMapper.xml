@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.gridevents.GridEventsMapper">
+
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.gridevents.GridEvents">
+        <id column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="data_from" property="dataFrom"/>
+        <result column="code" property="code"/>
+        <result column="status" property="status"/>
+        <result column="position" property="position"/>
+        <result column="title" property="title"/>
+        <result column="address" property="address"/>
+        <result column="remark" property="remark"/>
+        <result column="persons" property="persons"/>
+        <result column="events_grade" property="eventsGrade"/>
+        <result column="grid_id" property="gridId"/>
+        <result column="audio_media_address" property="audioMediaAddress"/>
+        <result column="units_involved" property="unitsInvolved"/>
+        <result column="node_id" property="nodeId"/>
+        <result column="executor" property="executor"/>
+        <result column="party_name" property="partyName"/>
+        <result column="media_address" property="mediaAddress"/>
+        <result column="happen_date" property="happenDate"/>
+        <result column="urgent_type" property="urgentType"/>
+        <result column="proc_inst_id" property="procInstId"/>
+        <result column="end_date" property="endDate"/>
+        <result column="events_type_id" property="eventsTypeId"/>
+        <result column="report_type" property="reportType"/>
+        <result column="grid_member" property="gridMember"/>
+        <result column="requirement_date" property="requirementDate"/>
+        <result column="telephone" property="telephone"/>
+        <result column="node_name" property="nodeName"/>
+        <result column="handle_self" property="handleSelf"/>
+        <result column="handle_self_opinion" property="handleSelfOpinion"/>
+        <result column="is_handle_self" property="isHandleSelf"/>
+        <association property="eventsTypes" javaType="me.zhengjie.entity.gridevents.EventsType" column="events_type_id" select="me.zhengjie.mapper.gridevents.EventsTypeMapper.selectById">
+        </association>
+        <association property="basicGrid" javaType="me.zhengjie.entity.BasicGrids" column="grid_id" select="me.zhengjie.mapper.BasicGridsMapper.getGridById">
+        </association>
+    </resultMap>
+
+    <select id="loadAllByQuery" resultMap="BaseResultMap">
+        SELECT ge.*,ge.create_user userId
+        ,(SELECT name FROM grid_dictionary where field_name ='urgentType' and number = ge.urgent_type) urgentTypeName
+        FROM grid_events ge
+        <where>
+            <if test="query.id != null and query.id != ''">
+                and  ge.id = #{query.id}
+            </if>
+            <if test="query.createUser != null and query.createUser != ''">
+                and  ge.create_user = #{query.createUser}
+            </if>
+            <if test="query.executor != null and query.executor != ''">
+                and  ge.executor LIKE CONCAT('%',#{query.executor},'%')
+            </if>
+            <if test="query.handleSelf != null and query.handleSelf != ''">
+                and  ge.handle_self = #{query.handleSelf}
+            </if>
+            <if test="query.isHandleSelf != null and query.isHandleSelf != ''">
+                and  ge.is_handle_self = #{query.isHandleSelf}
+            </if>
+            <if test="query.statusList != null and query.statusList.size() > 0">
+                AND ge.status in
+                <foreach item="id" index="index" collection="query.statusList" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.streetId != null and query.streetId != ''">
+                and find_in_set(grid_id, (
+                    select group_concat(id Separator ',') as id
+                    from basic_grids
+                    where street_id = #{query.streetId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.communityId != null and query.communityId != ''">
+                and find_in_set(grid_id, (
+                    select group_concat(id Separator ',') as id
+                    from basic_grids
+                    where community_id = #{query.communityId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grid_id, #{query.gridId})
+            </if>
+            <if test="query.eventsTypeId != null and query.eventsTypeId != ''">
+                and  ge.events_type_id = #{query.eventsTypeId}
+            </if>
+            <if test="query.dataFrom != null and query.dataFrom != ''">
+                and  ge.data_from = #{query.dataFrom}
+            </if>
+            <if test="query.createTime != null and query.createTime != ''">
+                and DATE_FORMAT(ge.create_time,'%Y-%m-%d')  = #{query.createTime}
+            </if>
+            <if test="query.queryStr != null and query.queryStr != ''">
+                AND  (
+                ge.title LIKE CONCAT('%',#{query.queryStr},'%')
+                or  ge.`code`  LIKE CONCAT('%',#{query.queryStr},'%')
+                )
+            </if>
+            <if test="query.endTime != null and query.endTime != '' and query.endTime">
+                and ge.end_date is null
+                and ge.requirement_date &lt; now()
+            </if>
+            and ge.is_deleted ='0'
+        </where>
+        order by ge.create_time desc
+    </select>
+    <select id="statisticsEvent" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM grid_events ge
+        <where>
+            <if test="searchVo != null">
+                <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                    AND ge.create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                </if>
+            </if>
+            <if test="query.streetId != null and query.streetId != ''">
+                and find_in_set(grid_id, (
+                select group_concat(id Separator ',') as id
+                from basic_grids
+                where street_id = #{query.streetId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.communityId != null and query.communityId != ''">
+                and find_in_set(grid_id, (
+                select group_concat(id Separator ',') as id
+                from basic_grids
+                where community_id = #{query.communityId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grid_id, #{query.gridId})
+            </if>
+            <if test="query.eventsTypeId != null and query.eventsTypeId != ''">
+                and  ge.events_type_id = #{query.eventsTypeId}
+            </if>
+            <if test="decide != null and decide == 0">
+            </if>
+            <if test="decide != null and decide == 1">
+                and ge.status = 1
+            </if>
+            <if test="decide != null and decide == 2">
+                and ge.status = 2
+            </if>
+            <if test="decide != null and decide == 3">
+                and ge.status != 2
+                and ge.end_date is null
+                and ge.requirement_date &lt; now()
+            </if>
+                and ge.is_deleted ='0'
+        </where>
+        order by ge.create_time desc
+    </select>
+    <select id="gridStatistics" resultType="me.zhengjie.entity.GridStatistics">
+        SELECT count(*) socialOrganization,
+        (SELECT count(*) FROM basic_person
+            <where>
+                <if test="searchVo != null">
+                    <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                        AND create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                    </if>
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    and  find_in_set(owned_grid_id, #{query.gridId})
+                </if>
+                    and is_delete ='0'
+            </where>) person
+        ,(SELECT count(*) FROM basic_housing
+            <where>
+                <if test="searchVo != null">
+                    <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                        AND create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                    </if>
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    and  find_in_set(owned_grid_id, #{query.gridId})
+                </if>
+                    and is_delete ='0'
+            </where>) houses
+        ,(SELECT count(*) FROM t_building_archives
+            <where>
+                <if test="searchVo != null">
+                    <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                        AND create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                    </if>
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    and  find_in_set(grid, #{query.gridId})
+                </if>
+                    and is_delete ='0'
+                    and building_type = '2' or building_type = '3' or building_type = '4' or building_type = '5' or building_type = '6' or building_type = '7'
+                    or building_type = '8' or building_type = '9'
+            </where>) buildingFacilities
+        ,(SELECT count(*) FROM t_building_archives
+            <where>
+                <if test="searchVo != null">
+                    <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                        AND create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                    </if>
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    and  find_in_set(grid, #{query.gridId})
+                </if>
+                    and is_delete ='0'
+                    and building_type = '1'
+            </where>) buildingArchives
+        ,(SELECT count(*) FROM t_urbancomponents
+            <where>
+                <if test="searchVo != null">
+                    <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                        AND create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                    </if>
+                </if>
+                <if test="query.gridId != null and query.gridId != ''">
+                    and  find_in_set(jurisdiction, #{query.gridId})
+                </if>
+                    and is_delete ='0'
+            </where>) urbancomponents
+        ,(SELECT count(*) FROM t_zhsq_property_management where is_delete ='0') propertyArchives
+        FROM basic_social_organization ge
+        <where>
+            <if test="searchVo != null">
+                <if test="searchVo.getStartDate()!=null and searchVo.getEndDate()!=null">
+                    AND create_time BETWEEN #{searchVo.startDate} and #{searchVo.endDate}
+                </if>
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grids_id, #{query.gridId})
+            </if>
+                and ge.is_delete ='0'
+        </where>
+    </select>
+    <select id="numbertEvent" resultType="java.lang.Integer">
+        SELECT count(*) allCount
+        FROM grid_events ge
+        <where>
+            <if test="query.streetId != null and query.streetId != ''">
+                and find_in_set(grid_id, (
+                select group_concat(id Separator ',') as id
+                from basic_grids
+                where street_id = #{query.streetId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.communityId != null and query.communityId != ''">
+                and find_in_set(grid_id, (
+                select group_concat(id Separator ',') as id
+                from basic_grids
+                where community_id = #{query.communityId} and is_delete = 0)
+                )
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grid_id, #{query.gridId})
+            </if>
+                and ge.events_type_id = #{id}
+                and ge.is_deleted ='0'
+        </where>
+    </select>
+    <select id="getAllStatus" resultType="java.util.Map">
+        SELECT  SUM(IF(`status` =1,1,0)) beReceived
+            ,SUM(IF(`status` =3,1,0))todo
+            ,SUM(IF(`status` =2,1,0)) toDispatch
+            ,SUM(IF(`status` IN (4,5,9),1,0))toExamine
+            ,SUM(IF(`status` =6 and data_from =1,1,0))toUserEnd
+            ,SUM(IF(`status` =6 and data_from =2,1,0))toEnd
+            ,SUM(IF(`status` =7,1,0)) twoExamine
+            ,SUM(IF(`status` =8,1,0)) isEnd
+            ,count(1) totalCount
+            FROM grid_events
+        <where>
+            <if test="query.createUser != null and query.createUser != ''">
+                and  create_user = #{query.createUser}
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  grid_id = #{query.gridId}
+            </if>
+            <if test="query.dataFrom != null and query.dataFrom != ''">
+                and  data_from = #{query.dataFrom}
+            </if>
+            <if test="query.createTime != null and query.createTime != ''">
+                and DATE_FORMAT(create_time,'%Y-%m-%d')  = #{query.createTime}
+            </if>
+        </where>
+    </select>
+    <select id="getOne" resultMap="BaseResultMap">
+   select ge.*,et.`name` eventsTypeName,ge.create_user userId
+     ,(SELECT name FROM grid_dictionary where field_name ='urgentType' and number = ge.urgent_type) urgentTypeName
+     ,(SELECT name FROM grid_dept where id = ge.grid_id) gridName
+   from grid_events ge
+	LEFT JOIN grid_events_type et ON ge.events_type_id = et.id
+       where ge.id = #{gridEventsId}
+    </select>
+    <select id="getStatistics" resultType="java.util.Map">
+        SELECT
+         SUM(IF(`status` =1,1,0)) beReceived
+        ,SUM(IF(`status` =2,1,0)) dispatch
+        ,SUM(IF(`status` =3,1,0))todo
+        ,SUM(IF(`status` IN (4,5,9),1,0))toExamine
+        ,SUM(IF(`status` =10,1,0))toEnd
+        ,SUM(IF(`status` =7,1,0)) twoExamine
+        ,SUM(IF(`status` =8,1,0)) isEnd
+        ,SUM(IF(`status` =6,1,0)) toEvaluate
+
+        ,IFNULL(et.`name`,'-') name
+        FROM grid_events ge
+        LEFT JOIN grid_events_type et ON ge.events_type_id = et.id
+        <where>
+            <if test="query.streetId != null and query.streetId != ''">
+                and find_in_set(ge.grid_id, (
+                    select
+                        group_concat(id Separator ',') id
+                    from
+                        basic_grids
+                    where
+                        street_id = #{query.streetId}
+                        and is_delete = 0)
+                )
+            </if>
+            <if test="query.communityId != null and query.communityId != ''">
+                and find_in_set(ge.grid_id, (
+                    select
+                        group_concat(id Separator ',') id
+                    from
+                        basic_grids
+                    where
+                        community_id = #{query.communityId}
+                        and is_delete = 0)
+                )
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grid_id, #{query.gridId})
+            </if>
+        </where>
+        GROUP BY ge.events_type_id
+    </select>
+    <select id="getStatisticsPage" resultType="java.util.Map">
+        SELECT  COUNT(distinct(id)) AS num
+        FROM
+        grid_events ge
+        WHERE
+        ge.STATUS=0
+        UNION
+        SELECT  COUNT(distinct(id)) AS num
+        FROM
+        grid_events ge
+        WHERE
+        ge.STATUS=1
+        UNION
+        SELECT  COUNT(distinct(id)) AS num
+        FROM
+        grid_events ge
+        WHERE
+        ge.STATUS=2
+    </select>
+
+    <select id="loadByQuery" resultType="me.zhengjie.entity.gridevents.GridEvents">
+        SELECT ge.*,ge.create_user userId
+        ,et.`name` eventsTypeName,
+        (SELECT status FROM grid_record where grid_events_id =ge.id ORDER BY create_time desc LIMIT 1 ) recordStatus
+        FROM grid_events ge
+        LEFT JOIN grid_events_type et ON et.id = ge.events_type_id
+        <where>
+            <if test="query.createUser != null and query.createUser != ''">
+                and  ge.create_user = #{query.createUser}
+            </if>
+            <if test="query.executor != null and query.executor != ''">
+                and  ge.executor like CONCAT('%',#{query.executor},'%')
+            </if>
+            <if test="query.statusList != null and query.statusList.size() > 0">
+                AND ge.status in
+                <foreach item="id" index="index" collection="query.statusList" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.streetId != null and query.streetId != ''">
+                and find_in_set(grid_id,
+                    (select
+                        group_concat(id Separator ',') as id
+                    from
+                        basic_grids
+                    where
+                        street_id = #{query.streetId}
+                        and is_delete = 0)
+                )
+            </if>
+            <if test="query.communityId != null and query.communityId != ''">
+                and find_in_set(grid_id,
+                    (select
+                        group_concat(id Separator ',') as id
+                    from
+                        basic_grids
+                    where
+                        community_id = #{query.communityId}
+                        and is_delete = 0)
+                )
+            </if>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grid_id, #{query.gridId})
+            </if>
+
+            <if test="query.eventsTypeId != null and query.eventsTypeId != ''">
+                and  ge.events_type_id = #{query.eventsTypeId}
+            </if>
+            <if test="query.dataFrom != null and query.dataFrom != ''">
+                and  ge.data_from = #{query.dataFrom}
+            </if>
+            <if test="query.createTime != null and query.createTime != ''">
+                and DATE_FORMAT(ge.create_time,'%Y-%m-%d')  = #{query.createTime}
+            </if>
+            <if test="query.queryStr != null and query.queryStr != ''">
+                AND  (
+                ge.title LIKE CONCAT('%',#{query.queryStr},'%')
+                or  ge.`code`  LIKE CONCAT('%',#{query.queryStr},'%')
+                )
+            </if>
+        </where>
+    </select>
+    <select id="getBigData" resultType="java.util.Map">
+        SELECT et.`name`,COUNT(ge.id) totalCount
+        FROM grid_events_type et
+        LEFT  JOIN (SELECT * FROM grid_events
+        <where>
+        <if test="query.dataFrom != null and query.dataFrom != ''">
+            and data_from =#{query.dataFrom}
+        </if>
+        </where>
+        ) ge on ge.events_type_id = et.id
+
+        <where>
+            <if test="query.gridId != null and query.gridId != ''">
+                and  find_in_set(ge.grid_id, #{query.gridId})
+            </if>
+
+        </where>
+        GROUP BY et.id
+
+    </select>
+</mapper>

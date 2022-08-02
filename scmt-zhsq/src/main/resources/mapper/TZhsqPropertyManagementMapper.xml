@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqPropertyManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqPropertyManagement">
+        <id column="id" property="id" />
+        <result column="property_name" property="propertyName" />
+        <result column="property_type" property="propertyType" />
+        <result column="property_principal" property="propertyPrincipal" />
+        <result column="property_principal_phone" property="propertyPrincipalPhone" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_delete" property="isDelete" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, property_name, property_type, property_principal, property_principal_phone, create_time, create_id, update_id, update_time, is_delete
+    </sql>
+    <!--    通过wapper 联表查询-->
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.TZhsqPropertyManagement">
+       SELECT
+            t.id,
+            t.property_name,
+            t1.Name as property_type,
+            t.property_principal,
+            t.property_principal_phone,
+            t.create_time,
+            t.create_id,
+            t.update_id,
+            t.update_time,
+            t.is_delete
+        FROM
+            t_zhsq_property_management t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'communityPriorityData'
+            AND t1.number = t.property_type
+             ${ew.customSqlSegment}
+    </select>
+
+</mapper>

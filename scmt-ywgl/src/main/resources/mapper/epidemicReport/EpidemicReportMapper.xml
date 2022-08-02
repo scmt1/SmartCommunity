@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.dao.mapper.EpidemicReportMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.dao.entity.EpidemicReport">
+        <id column="id" property="id" />
+        <result column="person_name" property="personName" />
+        <result column="person_id_card" property="personIdCard" />
+        <result column="person_mobile" property="personMobile" />
+        <result column="person_identity" property="personIdentity" />
+        <result column="person_industry" property="personIndustry" />
+        <result column="spare_mobile" property="spareMobile" />
+        <result column="person_origin" property="personOrigin" />
+        <result column="origin_province" property="originProvince" />
+        <result column="origin_city" property="originCity" />
+        <result column="origin_area" property="originArea" />
+        <result column="origin_address" property="originAddress" />
+        <result column="to_address" property="toAddress" />
+        <result column="to_stree" property="toStree" />
+        <result column="to_community" property="toCommunity" />
+        <result column="contact_person_name" property="contactPersonName" />
+        <result column="contact_person_mobile" property="contactPersonMobile" />
+        <result column="leave_date" property="leaveDate" />
+        <result column="arrive_date" property="arriveDate" />
+        <result column="transportation" property="transportation" />
+        <result column="health_code_color" property="healthCodeColor" />
+        <result column="promise_date" property="promiseDate" />
+        <result column="create_time" property="createTime" />
+        <result column="province_and_city" property="provinceAndCity" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, person_name, person_id_card, person_mobile, person_identity, person_industry, spare_mobile, person_origin, origin_province, origin_city, origin_area, origin_address, to_address, to_stree, to_community, contact_person_name, contact_person_mobile, leave_date, arrive_date, transportation, health_code_color, promise_date, create_time,province_and_city
+    </sql>
+
+</mapper>

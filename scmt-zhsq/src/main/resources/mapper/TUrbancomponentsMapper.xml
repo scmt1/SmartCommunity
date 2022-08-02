@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TUrbancomponentsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TUrbancomponents">
+        <id column="id" property="id" />
+        <id column="component_type" property="componentType" />
+        <id column="department_name" property="departmentName" />
+        <id column="lower_department" property="lowerDepartment" />
+        <id column="department_statu" property="departmentStatu" />
+        <id column="jurisdiction" property="jurisdiction" />
+        <id column="position" property="position" />
+        <id column="is_delete" property="isDelete" />
+        <id column="create_id" property="createId" />
+        <id column="create_time" property="createTime" />
+        <id column="update_id" property="updateId" />
+        <id column="update_time" property="updateTime" />
+        <id column="delete_id" property="deleteId" />
+        <id column="delete_time" property="deleteTime" />
+        <association property="tComponentmanagement" javaType="me.zhengjie.entity.TComponentmanagement" column="component_type" select="me.zhengjie.mapper.TComponentmanagementMapper.selectImgUrlById"></association>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="TUrbanComponents">
+        id, component_type, department_name, lower_department, department_statu, jurisdiction, position, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+</mapper>

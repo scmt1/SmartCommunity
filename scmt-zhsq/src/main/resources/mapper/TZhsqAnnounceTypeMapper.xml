@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqAnnounceTypeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqAnnounceType">
+        <id column="id" property="id"/>
+        <result column="announce_show" property="announceShow"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="create_time" property="createTime"/>
+        <result column="announce_sort" property="announceSort"/>
+        <result column="type_name" property="typeName"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, announce_show, is_delete, create_time, announce_sort, type_name
+    </sql>
+    <select id="selectAnnounceTypeById" resultMap="BaseResultMap">
+
+        select * from  t_zhsq_announce_type
+        where id=#{id}
+    </select>
+
+</mapper>

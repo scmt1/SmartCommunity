@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.BasicGridPersonPointMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.BasicGridPersonPoint">
+        <id column="id" property="id" />
+        <result column="grid_person_id" property="gridPersonId" />
+        <result column="grid_person_name" property="gridPersonName" />
+        <result column="position" property="position" />
+        <result column="remark" property="remark" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="delete_id" property="deleteId" />
+        <result column="delete_time" property="deleteTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, grid_person_id, grid_person_name, position, remark, is_delete, create_id, create_time, update_id, update_time, delete_id, delete_time
+    </sql>
+
+
+    <select id="getToDayGridPersonPoint"  resultType="me.zhengjie.entity.BasicGridPersonPoint">
+        select * from basic_grid_person_point
+        <where>
+            is_delete = 0
+            <if test="gridPersonId != null and gridPersonId != ''">
+                    and grid_person_id = #{gridPersonId}
+            </if>
+            <if test="gridPersonName != null and gridPersonName != ''">
+                and grid_person_name LIKE CONCAT('%',#{gridPersonName},'%')
+            </if>
+<!--            <if test="date != null and date != ''">-->
+<!--                and create_time BETWEEN #{date} AND #{date}-->
+<!--            </if>-->
+            <if test="date != null and date != ''">
+                and create_time &gt;= CONCAT(#{date},'00:00:00') and create_time &lt;= CONCAT(#{date},'23:59:59')
+            </if>
+        </where>
+        ORDER BY
+        create_time desc
+
+    </select>
+
+<!--    根据人员Id 查询最后一次的坐标-->
+    <select id="getCurrentGridPersonPoint" resultType="me.zhengjie.entity.BasicGridPersonPoint">
+         select * from basic_grid_person_point where grid_person_id = #{gridPersonId} ORDER BY create_time DESC LIMIT 0,1
+    </select>
+
+
+    <select id="gridPersonTrackQuery" resultType="me.zhengjie.entity.BasicGridPersonPoint">
+        select * from basic_grid_person_point
+        <where>
+            grid_person_id = #{gridPersonId}  and is_delete=0
+            <if test="startTime != null and startTime != ''">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND create_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY create_time ASC
+    </select>
+</mapper>

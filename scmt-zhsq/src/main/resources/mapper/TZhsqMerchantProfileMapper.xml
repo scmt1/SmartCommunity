@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="me.zhengjie.mapper.TZhsqMerchantProfileMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="me.zhengjie.entity.TZhsqMerchantProfile">
+        <id column="id" property="id" />
+        <result column="merchant_sort" property="merchantSort" />
+        <result column="merchant_name" property="merchantName" />
+        <result column="merchant_address" property="merchantAddress" />
+        <result column="business_scope" property="businessScope" />
+        <result column="legal_entity" property="legalEntity" />
+        <result column="legal_phone" property="legalPhone" />
+        <result column="legal_id" property="legalId" />
+        <result column="location" property="location" />
+        <result column="head_portrait" property="headPortrait" />
+        <result column="legal_community" property="legalCommunity" />
+        <result column="legal_grid" property="legalGrid" />
+        <result column="house_Id" property="houseId" />
+        <result column="create_id" property="createId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_delete" property="isDelete" />
+        <result column="house_name" property="houseName" />
+
+    </resultMap>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, merchant_sort, merchant_name, merchant_address, business_scope, legal_entity, legal_phone, legal_id, location, head_portrait, legal_community, legal_grid, house_Id, create_id, create_time, update_id, update_time, is_delete
+    </sql>
+    <!--   房屋类型统计-->
+    <select id="getHouseType" resultType="map">
+        SELECT
+        house_name,
+        SUM( CASE WHEN house_type = "1" THEN 1 ELSE 0 END ) AS zizhu,
+        SUM( CASE WHEN house_type = "2" THEN 1 ELSE 0 END ) AS zulin,
+        SUM( CASE WHEN house_type = "3" THEN 1 ELSE 0 END ) AS kongzhi,
+        SUM( CASE WHEN house_type = "4" THEN 1 ELSE 0 END ) AS qita
+        FROM
+        basic_housing
+        WHERE
+         is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and owned_grid_id = #{gridId}
+        </if>
+        GROUP BY
+        house_name
+    </select>
+    <!--    建筑类型统计-->
+    <select id="getBuildingType" resultType="map">
+        SELECT
+        IFNULL(SUM( CASE WHEN building_type = "1" THEN 1 ELSE 0 END ),0) AS zhuzhai,
+        IFNULL(SUM( CASE WHEN building_type = "2" THEN 1 ELSE 0 END ),0) AS bangong,
+        IFNULL(SUM( CASE WHEN building_type = "3" THEN 1 ELSE 0 END ),0) AS gongyuan,
+        IFNULL(SUM( CASE WHEN building_type = "4" THEN 1 ELSE 0 END ),0) AS gonggong,
+        IFNULL(SUM( CASE WHEN building_type = "5" THEN 1 ELSE 0 END ),0) AS gongchang,
+        IFNULL(SUM( CASE WHEN building_type = "6" THEN 1 ELSE 0 END ),0) AS qita
+        FROM
+        t_building_archives
+        WHERE
+         is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grid = #{gridId}
+        </if>
+    </select>
+    <!--    商户类型统计-->
+    <select id="getMerchantType" resultType="map">
+        SELECT
+        IFNULL(SUM( CASE WHEN merchant_sort = "1" THEN 1 ELSE 0 END ),0) AS canyin,
+        IFNULL(SUM( CASE WHEN merchant_sort = "2" THEN 1 ELSE 0 END ),0) AS yiban,
+        IFNULL( SUM( CASE WHEN merchant_sort = "3" THEN 1 ELSE 0 END ),0) AS pifa,
+        IFNULL(SUM( CASE WHEN merchant_sort = "4" THEN 1 ELSE 0 END ),0) AS minsheng,
+        IFNULL(SUM( CASE WHEN merchant_sort = "5" THEN 1 ELSE 0 END ),0) AS gongyi
+        FROM
+        basic_social_organization
+        WHERE
+         is_delete=0 and  type = "1"
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grids_id = #{gridId}
+        </if>
+    </select>
+
+    <!--    社会组织统计-->
+    <select id="getSocialType" resultType="map">
+        SELECT
+        IFNULL(SUM( CASE WHEN type = "1" THEN 1 ELSE 0 END ) ,0)AS geti,
+        IFNULL(SUM( CASE WHEN type = "2" THEN 1 ELSE 0 END ),0) AS shanghu,
+        IFNULL(SUM( CASE WHEN type = "3" THEN 1 ELSE 0 END ),0) AS tuanti,
+        IFNULL(SUM( CASE WHEN type = "4" THEN 1 ELSE 0 END ),0) AS jiaoyu,
+        IFNULL(SUM( CASE WHEN type = "5" THEN 1 ELSE 0 END ),0) AS feiyingli,
+        IFNULL(SUM( CASE WHEN type = "6" THEN 1 ELSE 0 END ),0) AS weisheng,
+        IFNULL(SUM( CASE WHEN type = "7" THEN 1 ELSE 0 END ),0) AS qita,
+        (
+        SELECT
+        IFNULL(SUM( CASE WHEN type = "1" THEN 1 ELSE 0 END ),0) AS geti
+        FROM
+        basic_social_organization
+        WHERE
+        YEAR ( create_time ) = YEAR ( DATE_SUB( now(), INTERVAL 1 YEAR )  ) and is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grids_id = #{gridId}
+        </if>
+        ) AS lastGeti ,
+        (
+        SELECT
+        IFNULL(SUM( CASE WHEN type = "2" THEN 1 ELSE 0 END ) ,0)AS geti
+        FROM
+        basic_social_organization
+        WHERE
+         YEAR ( create_time ) = YEAR (  DATE_SUB( now(), INTERVAL 1 YEAR ) ) and is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grids_id = #{gridId}
+        </if>
+        ) AS lastShanghu,
+        (
+        SELECT
+        IFNULL(SUM( CASE WHEN type = "1" THEN 1 ELSE 0 END ),0) AS geti
+        FROM
+        basic_social_organization
+        WHERE
+        YEAR ( create_time ) = YEAR ( now()) and is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grids_id = #{gridId}
+        </if>
+        ) AS newGeti ,
+        (
+        SELECT
+        IFNULL(SUM( CASE WHEN type = "2" THEN 1 ELSE 0 END ),0) AS geti
+        FROM
+        basic_social_organization
+        WHERE
+        YEAR ( create_time ) = YEAR (now()) and is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grids_id = #{gridId}
+        </if>
+        ) AS newShanghu
+        FROM
+        basic_social_organization
+        where   is_delete=0
+        <if test="communityId != null and communityId != ''">
+            and community_id  = #{communityId}
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grids_id = #{gridId}
+        </if>
+    </select>
+
+
+    <select id="selectByMyWrapper" resultType="me.zhengjie.entity.TZhsqMerchantProfile">
+       SELECT
+            t.id,
+            t1.NAME as merchant_sort,
+            t.merchant_name,
+            t.merchant_address,
+            t.business_scope,
+            t.legal_entity,
+            t.legal_phone,
+            t.legal_id,
+            t.location,
+            t.head_portrait,
+            t.legal_community,
+            t.legal_grid,
+            t.house_Id,
+            t.create_id,
+            t.create_time,
+            t.update_id,
+            t.update_time,
+            t.is_delete
+        FROM
+            t_zhsq_merchant_profile t
+            LEFT JOIN grid_dictionary t1 ON t1.field_name = 'merchantSortData'
+            AND t1.number = t.merchant_sort
+             ${ew.customSqlSegment}
+    </select>
+
+    <!--    事件紧急程度统计-->
+    <select id="getUrgentType" resultType="map">
+        SELECT
+        IFNULL(SUM( CASE WHEN urgent_type = 1 THEN 1 ELSE 0 END ),0) AS putong,
+        IFNULL(SUM( CASE WHEN urgent_type = 2 THEN 1 ELSE 0 END ),0) AS yiban,
+        IFNULL( SUM( CASE WHEN urgent_type = 3 THEN 1 ELSE 0 END ),0) AS jingji,
+        IFNULL(SUM( CASE WHEN urgent_type = 4 THEN 1 ELSE 0 END ),0) AS kongxian
+
+        FROM
+        grid_events
+        WHERE
+        1=1 and status != 0
+        <if test="communityId != null and communityId != ''">
+            and grid_id in (SELECT id FROM basic_grids where community_id = #{communityId})
+        </if>
+        <if test="gridId != null and gridId != ''">
+            and grid_id = #{gridId}
+        </if>
+    </select>
+</mapper>
