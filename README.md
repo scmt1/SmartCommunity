@@ -5,7 +5,7 @@
 	<strong>适合互联网企业使用的开源智慧社区管理平台</strong>
 </p>
 <p align="center">
-	👉 <a href="http://223.87.166.240:9123">https://scmtww.gnway.cc</a> 👈
+	👉 <a href="https://www.scmintu.com">https://www.scmintu.com</a> 👈
 </p>
 
 <p align="center">
@@ -93,12 +93,10 @@ SmartCommunity
 ***
 * 公司名称：四川民图科技有限公司
 * 地址：成都市金牛区北三环路一段221号
-* 电话：0830-2663368
-* 业务 QQ：1544857622
+* 电话：400-855-2332
 * 业务合作：scmtkj@163.com
-* 微信：dj18428385268
-
-## 🥪 交流群
+* 公司主页：https://www.scmintu.com/
+## 🥪 交流咨询群
 如果需要体验账号请加QQ群
 <img src="http://223.87.166.240:8014/5727851172303481.png">
 
