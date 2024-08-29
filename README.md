@@ -1,11 +1,9 @@
-<p align="center">
-	<a href="hhttp://223.87.166.240:8014"><img src="http://223.87.166.240:8014/favicon.ico"></a>
-</p>
+![](vx_images/favicon.ico)
 <p align="center">
 	<strong>适合互联网企业使用的开源智慧社区管理平台</strong>
 </p>
 <p align="center">
-	👉 <a href="https://www.scmintu.com">https://www.scmintu.com</a> 👈
+	👉 <a href="https://www.scmintu.com/3">https://www.scmintu.com/</a> 👈
 </p>
 
 <p align="center">
@@ -85,9 +83,23 @@ SmartCommunity
 ## 🍯 系统截图
 
 `以下截图是从实际已完成功能界面截取,截图时间为：2022-07-29 08:59`
+![](vx_images/10f5f776858578858a080a922705fff.jpg)
 ![0](vx_images/298740511220770.png)
 ![1](vx_images/222680612239196.png)![2](vx_images/444280612227063.png)![3](vx_images/52840712247229.png)![1](vx_images/577575411220770.png)![5](vx_images/17870812239898.png)![9](vx_images/212191112236453.png)![10](vx_images/294551112232207.png)![11](vx_images/364281112250087.png)![12](vx_images/431811112247691.png)![13](vx_images/497841112245193.png)![14](vx_images/569941112226434.png)![9](vx_images/9.png)![13](vx_images/13.png)![14](vx_images/14.png)![15](vx_images/15.png)![10](vx_images/10.png)![11](vx_images/11.png)![12](vx_images/12.png)
+网格员手机端    
 
+1、首页
+![12](vx_images/sj7.jpg)
+2、信息采集
+![12](vx_images/sj6.jpg)
+3、工作管理
+![12](vx_images/sj5.jpg)
+4、我的
+![12](vx_images/sj4.jpg)
+5、实有人口
+![12](vx_images/sj3.jpg)
+5、实有房屋
+![12](vx_images/sj1.jpg)
 
 ## 🥪 关于我们
 ***
@@ -97,7 +109,7 @@ SmartCommunity
 * 业务合作：scmtkj@163.com
 * 公司主页：https://www.scmintu.com/
 ## 🥪 交流咨询群
-如果需要体验账号请加QQ群
+如果需要体验账号请加QQ群（416219961）
 <img src="http://223.87.166.240:8014/5727851172303481.png">
 
 ![qq](vx_images/5727851172303481.png)
